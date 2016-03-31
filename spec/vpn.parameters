@@ -1,0 +1,70 @@
+[
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-abcd1234"
+  },
+  {
+    "ParameterKey": "VpcCidrNetwork",
+    "ParameterValue": "172.16.0.0/16"
+  },
+  {
+    "ParameterKey": "OfficeNetwork",
+    "ParameterValue": "127.0.0.1/32"
+  },
+  {
+    "ParameterKey": "StackEnvironment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "KeyPair",
+    "ParameterValue": "testkey"
+  },
+  {
+    "ParameterKey": "DefaultIngressSecurityGroup",
+    "ParameterValue": "sg-abcd1234"
+  },
+  {
+    "ParameterKey": "OpsWorksDefaultOs",
+    "ParameterValue": "Amazon Linux 2015.09"
+  },
+  {
+    "ParameterKey": "OpsWorksDefaultSubnetId",
+    "ParameterValue": "subnet-abcd1234"
+  },
+  {
+    "ParameterKey": "OpsWorksStackName",
+    "ParameterValue": "DevRemoteAccessVPN"
+  },
+  {
+    "ParameterKey": "OpsWorksCustomJson",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "OpsWorksServiceRoleArn",
+    "ParameterValue": "arn:aws:iam::123456789012:role/teststack-OpsWorksServiceRole-L44YW4T65C00"
+  },
+  {
+    "ParameterKey": "UseOpsworksSecurityGroups",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "OpsWorksConfigureRunlist",
+    "ParameterValue": "vpnserver::configure"
+  },
+  {
+    "ParameterKey": "OpsWorksDeployRunlist",
+    "ParameterValue": "vpnserver::deploy"
+  },
+  {
+    "ParameterKey": "OpsWorksSetupRunlist",
+    "ParameterValue": "vpnserver::setup"
+  },
+  {
+    "ParameterKey": "OpsWorksShutdownRunlist",
+    "ParameterValue": "vpnserver::shutdown"
+  },
+  {
+    "ParameterKey": "OpsWorksUndeployRunlist",
+    "ParameterValue": "vpnserver::undeploy"
+  }
+]

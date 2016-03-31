@@ -1,0 +1,253 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Remote Access VPN stack",
+
+  "Parameters" : {
+
+    "VpcId" : {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description" : "The VPC identifier",
+      "ConstraintDescription": "must be a valid VPC identifier"
+    },
+
+    "VpcCidrNetwork" : {
+      "Description" : "The VPC CIDR",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "OfficeNetwork" : {
+      "Description" : "The office CIDR where remote management will occur",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "127.0.0.1/32",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "StackEnvironment": {
+      "Type": "String",
+      "Description" : "The environment (dev|prod)",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "dev|prod",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+
+    "KeyPair": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+
+    "DefaultIngressSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup::Id",
+      "Description": "The default VPC ingress security group"
+    },
+
+    "OpsWorksStackName": {
+      "Type": "String"
+    },
+
+    "OpsWorksDefaultOs": {
+      "Type": "String",
+      "Description": "The stack's default operating system"
+    },
+
+    "OpsWorksDefaultSubnetId": {
+      "Type": "AWS::EC2::Subnet::Id",
+      "Description": "The stack's default VPC subnet ID"
+    },
+
+    "OpsWorksCustomJson": {
+      "Type": "String",
+      "Description": "Custom JSON used to override corresponding default stack configuration JSON values"
+    },
+
+    "OpsWorksServiceRoleArn": {
+      "Type": "String",
+      "Description": "The AWS Identity and Access Management (IAM) role that AWS OpsWorks uses to work with AWS resources on your behalf."
+    },
+
+    "UseOpsworksSecurityGroups": {
+      "Type": "String",
+      "Description": "Whether to associate the AWS OpsWorks built-in security groups with the stack's layers."
+    },
+
+    "OpsWorksConfigureRunlist": {
+      "Type": "CommaDelimitedList"
+    },
+
+    "OpsWorksDeployRunlist": {
+     "Type": "CommaDelimitedList"
+    },
+
+    "OpsWorksSetupRunlist": {
+      "Type": "CommaDelimitedList"
+    },
+
+    "OpsWorksShutdownRunlist": {
+      "Type": "CommaDelimitedList"
+    },
+
+    "OpsWorksUndeployRunlist": {
+      "Type": "CommaDelimitedList"
+    },
+
+    "S3CookbookSource": {
+      "Type": "String"
+    }
+
+  },
+
+  "Conditions": {
+
+    "HasCustomJson": { 
+      "Fn::Not" : [{
+        "Fn::Equals" : [
+          {"Ref" : "OpsWorksCustomJson"},
+          ""
+        ]
+      }]
+    }
+
+  },
+
+  "Resources" : {
+
+    "VpnInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+
+    "VpnServerIamPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "vpnserver",
+        "PolicyDocument": {
+        "Statement": [{
+          "Effect": "Allow",
+          "Action": [ "*" ],
+          "Resource": [ "*" ]
+        }]
+        },
+        "Roles" : [ { "Ref" : "VpnInstanceRole" } ]
+      }
+    },
+
+    "VpnInstanceIamProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [ {"Ref": "VpnInstanceRole"} ]
+      }
+    },
+
+    "VpnServerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VpcId" },
+        "GroupDescription" : "Enable VPN server ingress traffic",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "1701", "ToPort" : "1701", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "4500", "ToPort" : "4500", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "500", "ToPort" : "500", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"}
+         ],
+         "Tags" : [
+           { "Key" : "Name", "Value" : { "Fn::Join": [ "-", [ { "Ref": "StackEnvironment" }, "vpnserver" ] ] } }
+         ]
+      }
+    },
+
+    "VpnServerEip" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "OpsWorksStack": {
+      "Type" : "AWS::OpsWorks::Stack",
+      "Properties" : {
+        "Name": {"Ref": "OpsWorksStackName"},
+        "VpcId": {"Ref": "VpcId"},
+        "ConfigurationManager" : { 
+          "Name" : "Chef",
+          "Version" : "12"
+        },
+        "CustomCookbooksSource" : {
+          "Type": "s3",
+          "Url": { "Ref": "S3CookbookSource" }
+        },
+        "CustomJson" : {
+          "Fn::If" : [
+            "HasCustomJson",
+            {"Ref" : "OpsWorksCustomJson"},
+            {"Ref" : "AWS::NoValue" }
+          ]
+        },
+        "DefaultOs": {"Ref": "OpsWorksDefaultOs"},
+        "DefaultSubnetId": {"Ref": "OpsWorksDefaultSubnetId"},
+        "DefaultInstanceProfileArn":  {"Fn::GetAtt" : ["VpnInstanceIamProfile", "Arn"] },
+        "DefaultSshKeyName": {"Ref": "KeyPair"},
+        "HostnameTheme": "Layer_Dependent",
+        "ServiceRoleArn": {"Ref": "OpsWorksServiceRoleArn"},
+        "UseCustomCookbooks": true,
+        "UseOpsworksSecurityGroups": {"Ref": "UseOpsworksSecurityGroups"}
+      }
+    },
+
+    "OpsWorksLayer": {
+      "Type": "AWS::OpsWorks::Layer",
+      "Properties": {
+        "Name": { "Fn::Join": [ "-", [ {"Ref": "StackEnvironment" }, "vpnserver"] ] },
+        "Shortname": { "Fn::Join": [ "-", [ {"Ref": "StackEnvironment" }, "vpnserver"] ] },
+        "StackId" : {"Ref": "OpsWorksStack"},
+        "Type": "custom",
+        "AutoAssignElasticIps": false,
+        "AutoAssignPublicIps": true,
+        "CustomInstanceProfileArn": {"Fn::GetAtt" : ["VpnInstanceIamProfile", "Arn"] },
+        "CustomRecipes": {
+          "Configure": {"Ref" : "OpsWorksConfigureRunlist"},
+          "Deploy": {"Ref" : "OpsWorksDeployRunlist"},
+          "Setup": {"Ref" : "OpsWorksSetupRunlist"},
+          "Shutdown": {"Ref" : "OpsWorksShutdownRunlist"},
+          "Undeploy": {"Ref" : "OpsWorksUndeployRunlist"}
+        },
+        "CustomSecurityGroupIds":  [ {"Ref": "DefaultIngressSecurityGroup"}, {"Ref": "VpnServerSecurityGroup"}],
+        "EnableAutoHealing": true,
+        "InstallUpdatesOnBoot": true
+      }
+    }
+
+  },
+
+  "Outputs" : {
+    "VpnServerEipAllocationId" : { 
+      "Value" : { "Fn::GetAtt" : [ "VpnServerEip", "AllocationId" ] }
+    }
+  }
+}
