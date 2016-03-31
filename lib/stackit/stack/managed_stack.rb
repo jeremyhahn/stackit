@@ -40,7 +40,7 @@ module Stackit
       if param_map
         param_map.symbolize_keys!
       else
-        []
+        {}
       end
     end
 
@@ -51,7 +51,10 @@ module Stackit
     def create_template(t)
       template_path = t ? t : File.join(Dir.pwd, 'cloudformation', "#{stack_name.underscore.dasherize}.json")
       return unless File.exist?(template_path)
-      template = Template.new(:template_path => template_path)
+      template = Template.new(
+        :cloudformation => cloudformation,
+        :template_path => template_path
+      )
       template.parse!
     end
 
@@ -219,37 +222,23 @@ module Stackit
       end
     end
 
-    def dependent_parameters
-      depends.inject([]) do |arr, dep|
-        arr.push(Stackit::Stack.new(stack_name))
-      end
-    end
-
     def merged_parameters
-
-      parsed_parameters = template.parsed_parameters
+      merged_params = template.parsed_parameters
       return parsed_parameters unless depends.length
-
-      validated_parameters = parsed_parameters.clone
-
       # merge file parameters
-      validated_parameters.merge!(file_parameters) if file_parameters
-
-      # merge --depends
+      merged_params.merge!(file_parameters) if file_parameters
       depends.each do |dependent_stack_name|
         this_stack = Stack.new({
           cloudformation: cloudformation,
           stack_name: dependent_stack_name
         })
-        validated_parameters.select { |param|
+        merged_params.select { |param|
           !this_stack[mapped_key(param.to_s)].nil?
         }.each do | param_name, param_value |
-          validated_parameters.merge!(param_name => this_stack[mapped_key(param_name)])
+          merged_params.merge!(param_name => this_stack[mapped_key(param_name)])
         end
       end
-
-      # merge user defined parameters
-      validated_parameters.merge!(user_defined_parameters)
+      merged_params.merge!(user_defined_parameters)
     end
 
     def mapped_key(param)

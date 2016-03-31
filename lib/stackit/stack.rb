@@ -43,7 +43,7 @@ module Stackit
     def parameters
       @parameters ||= begin
         stack.parameters.inject({}) do |hash, param|
-          hash.merge(param[:parameter_key] => param[:parameter_value])
+          hash.merge(param[:parameter_key].to_sym => param[:parameter_value])
         end
       rescue ::Aws::CloudFormation::Errors::ValidationError => e
         [] if e.message =~ /Stack with id #{stack_name} does not exist/
@@ -53,7 +53,7 @@ module Stackit
     def outputs
       @outputs ||= begin
         stack.outputs.inject({}) do |hash, output|
-          hash.merge(output[:output_key] => output[:output_value])
+          hash.merge(output[:output_key].to_sym => output[:output_value])
         end
       rescue ::Aws::CloudFormation::Errors::ValidationError => e
         [] if e.message =~ /Stack with id #{stack_name} does not exist/
@@ -62,7 +62,7 @@ module Stackit
 
     def resources
       @resources ||= list_stack_resources.inject({}) do |hash, resource|
-        hash.merge(resource[:logical_resource_id] => resource[:physical_resource_id])
+        hash.merge(resource[:logical_resource_id].to_sym => resource[:physical_resource_id])
       end
     end
 

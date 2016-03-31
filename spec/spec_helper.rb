@@ -15,6 +15,8 @@ RSpec.shared_context 'Stubbed Responses' do
   let(:base_stack_name) { 'base-stack' }
   let(:new_stack_name) { 'new-stack' }
   let(:fake_template) { 'fake.json' }
+  let(:real_template) { 'spec/vpc.json' }
+  let(:real_parameters_file) { 'spec/vpc.parameters' }
 
   def stub_describe_stacks(stack_name = base_stack_name)
     cloudformation.stub_responses(:describe_stacks, {
@@ -68,13 +70,13 @@ RSpec.shared_context 'Stubbed Responses' do
   	allow(File).to receive(:open).and_return(File)
   	allow(File).to receive(:read).and_return(nil)
     cloudformation.stub_responses(:validate_template, {
-	  parameters: [{
-	    parameter_key: 'base-stack-key',
-	    default_value: 'value'
-	  }, {
-	  	parameter_key: 'CommonParam',
-	  	default_value: 'common param value in the base-stack template'
-	  }]
+  	  parameters: [{
+  	    parameter_key: 'base-stack-key',
+  	    default_value: 'value'
+  	  }, {
+  	  	parameter_key: 'CommonParam',
+  	  	default_value: 'common param value in the base-stack template'
+  	  }]
 	})
   end
 
@@ -82,19 +84,19 @@ RSpec.shared_context 'Stubbed Responses' do
   	allow(File).to receive(:open).and_return(File)
   	allow(File).to receive(:read).and_return(nil)
     cloudformation.stub_responses(:validate_template, {
-	  parameters: [{
-	    parameter_key: 'CommonParam',
-	    default_value: 'common param in the new template'
-	  }, {
-	  	parameter_key: 'new-stack-key',
-	  	default_value: 'value'
-	  }, {
-        parameter_key: 'CommonOutput',
-	  	default_value: 'value'
-	  }, {
-        parameter_key: 'CommonResource',
-	  	default_value: 'value'
-	  }]
+  	  parameters: [{
+  	    parameter_key: 'CommonParam',
+  	    default_value: 'common param in the new template'
+  	  }, {
+  	  	parameter_key: 'new-stack-key',
+  	  	default_value: 'value'
+  	  }, {
+          parameter_key: 'CommonOutput',
+  	  	default_value: 'value'
+  	  }, {
+          parameter_key: 'CommonResource',
+  	  	default_value: 'value'
+  	  }]
 	})
   end
 
