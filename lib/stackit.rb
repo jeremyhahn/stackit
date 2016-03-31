@@ -1,10 +1,10 @@
 require "logger"
 require "pp"
-require "stackit/version"
-require 'json'
+require "json"
 require "active_support"
 require "active_support/all"
 require "awsclient"
+require "stackit/version"
 require "stackit/aws"
 require "stackit/template"
 require "stackit/stack/default_notifier"

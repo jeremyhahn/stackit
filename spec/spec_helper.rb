@@ -36,7 +36,18 @@ RSpec.shared_context 'Stubbed Responses' do
 	    }, {
 	      output_key: "OutputKey2",
 	      output_value: 'value2'
-	    }]
+	    }],
+      notification_arns: [
+        "arn:stackit:rspec-notification0", 
+        "arn:stackit:rspec-notification1"
+      ],
+      tags: [{
+        key: "rspec0",
+        value: "value0",
+      }, {
+        key: "rspec1",
+        value: "value1"
+      }]
 	  }]
 	})
   end

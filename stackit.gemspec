@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["mail@jeremyhahn.com"]
 
   spec.summary       = %q{Simple, elegant CloudFormation dependency management.}
-  spec.description   = %q{Use existing stack values (output, resource, or parameters) as input parmeters to templates.}
+  spec.description   = %q{Use existing stack values (output, resource, or parameters) as input parmeters to CloudFormation templates.}
   spec.homepage      = "https://github.com/jeremyhahn/stackit"
   spec.license       = "GPLv3"
 
