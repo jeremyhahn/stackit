@@ -1,4 +1,4 @@
-# Stackit
+# stackit
 
 Simple, elegant CloudFormation dependency management.
 
@@ -36,4 +36,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/jeremy
 ## License
 
 The gem is available as open source under the terms of the [GNU GENERAL PUBLIC LICENSE](http://www.gnu.org/licenses/gpl-3.0.en.html).
-
