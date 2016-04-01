@@ -2,6 +2,12 @@
 
 Simple, elegant CloudFormation dependency management.
 
+[CloudFormation parameters](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html) can become cumbersome to manage as your infrastructure scales. At some point, you realize there has to be a better way than specifying parameters on the command line or putting them into files and shell scripts.
+
+StackIT makes it easier to manage the lifecycle of your stacks by allowing you to map values from existing stacks. For example, we can have a VPC stack that defines networking resources that a separate remote access VPN stack references when launched. StackIT will automatically map VPC resource, output and/or parameter values to parameters defined in the VPN template. 
+
+StackIT can also work with parameter files and user defined parameters in conjunction with CloudFormation stacks. This is quite useful if you want to override parameters.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,9 +24,90 @@ Or install it yourself as:
 
     $ gem install stackit
 
+## Parameters
+
+Let's take a look at each of the ways to get parameter values into your template.
+
+StackIT uses the following order of precedence when determining which parameter value to pass into your template.
+
+1. File Parameters
+2. Existing CloudFormation Stacks
+3. User Defined Parameters
+
+##### File Parameters
+
+File parameters work just like the default AWS CLI parameters file. Simply specify the path to your JSON parameter file using the `--parameter-file` option.
+
+    stackit create --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters
+
+##### Existing CloudFormation Stacks
+
+Your stack can `--depend` on existing stacks. Any resource, output, or parameter whose ID matches a parameter key in the template will automatically have it's value passed into the stack during management.
+
+> Parameter values mapped using `--depends` override parameters defined in the parameter file.
+
+    stackit create --stack-name mystack --template my-template --parameter-file mytemplate.parameters --depends myvpc
+
+##### User Defined Parameters
+
+User defined parameters allow you to define the parameters yourself using the `--parameters` options. 
+
+> User defined parameters override parameters defined using `--parameter-file` and `--depends`.
+
 ## Usage
 
-TODO: Write usage instructions here
+### CLI
+
+StackIT ships with [Thor](http://whatisthor.com/) to provide a command line interface to stack management. Run the `help` command for details.
+
+    # show top level commands
+    stackit help
+
+    # show options for create command
+    stackit help create
+
+##### Create a stack using a parameter file
+
+    stackit create --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters
+
+##### Create a stack using `--depends` to reference resource, output and parameter values in the "myvpc" stack
+
+    stackit create --stack-name mystack --template mytemplate.json --depends myvpc
+
+##### Create a stack using user defined parameters
+
+    stackit create --stack-name mystack --template mytemplate.json --parameters param1:value1 param2:value2
+
+##### Create a stack using a parameter file, overriding parameters found in the "myvpc" resource, output or parameters.
+
+    stackit create --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters --depends myvpc
+
+##### Create a stack using a parameter file, overriding those parameters with mapped parameters in the "myvpc" stack, and override both of those with user defined parameters.
+
+    stackit create --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters --depends myvpc --parameters param1:final_value
+
+##### Mapping Parameters
+
+You may optionally map parameters that don't have matching keys. For example, let's map the value for the "Vpc" resource into the "VpcId" parameter in our VPN stack using the `--parameter-map` option.
+
+    # Maps the "Vpc" resource value in the "myvpc" stack to the "VpcId" parameter in the VPN stack.
+    stackit create --stack-name myvpn --template vpn.json --parameter-file vpn.parameters --depends myvpc --parameter-map VpcId:Vpc
+
+### Library
+
+StackIT can be used as library in your own automation tools.
+
+```ruby
+  ManagedStack.new({
+    template: '/path/to/template.json',
+    stack_name: 'mystack',
+    depends: 'otherstack',
+    user_defined_parameters: {
+      :param1 => 'myvalue',
+      :param2 => 'something else'
+    }
+  }).create!
+```
 
 ## Development
 
