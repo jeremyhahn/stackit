@@ -119,7 +119,7 @@ module Stackit
         delete!
         wait_for_stack_to_delete
         notifier.success('Delete successful')
-      elsif exists?
+      elsif exist?
         begin
           update!
           wait_for_stack

@@ -25,7 +25,7 @@ module Stackit
       self.name.gsub(%r{.*::}, '').gsub(%r{^[A-Z]}) { |match| match[0].downcase }.gsub(%r{[A-Z]}) { |match| "-#{match[0].downcase}" }
     end
 
-    desc 'create', 'Creates a new CloudFormation stack'
+    desc 'create-stack', 'Creates a new CloudFormation stack'
     method_option :template, aliases: '-t', desc: 'The cloudformation template', :required => true
     method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name', :required => true
     method_option :stack_policy, :aliases => '-p', :desc => 'A local file system or S3 (HTTPS) path to the stack policy'
@@ -36,7 +36,7 @@ module Stackit
     method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
     method_option :force, :desc => 'Force a stack update on unchanged templates'
     method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
-    def create
+    def create_stack
       ManagedStack.new({
         template: options[:template],
         stack_name: options[:stack_name],
@@ -52,7 +52,7 @@ module Stackit
       }).create!
     end
 
-    desc 'update', 'Updates an existing CloudFormation stack'
+    desc 'update-stack', 'Updates an existing CloudFormation stack'
     method_option :template, aliases: '-t', desc: 'The cloudformation template', :required => true
     method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name', :required => true
     method_option :stack_policy, :aliases => '-p', :desc => 'A local file system or S3 (HTTPS) path to the stack policy'
@@ -64,7 +64,7 @@ module Stackit
     method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
     method_option :force, :desc => 'Force a stack update on unchanged templates'
     method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
-    def update
+    def update_stack
       ManagedStack.new({
         template: options[:template],
         stack_name: options[:stack_name],
@@ -81,12 +81,12 @@ module Stackit
       }).update!
     end
 
-    desc 'delete', 'Deletes a CloudFormation stack'
+    desc 'delete-stack', 'Deletes a CloudFormation stack'
     method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name', :required => true
     method_option :retain_resources, :aliases => '-r', :type => :array, :desc => 'Space delimited list of logical resource ids to retain after the stack is deleted'
     method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
     method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
-    def delete
+    def delete_stack
       ManagedStack.new({
         stack_name: options[:stack_name],
         wait: options[:wait],
@@ -95,7 +95,7 @@ module Stackit
       }).delete!
     end
 
-    desc 'create-keypair', 'Creates a new EC2 keypair'
+    desc 'create-keypair', 'Creates a new EC2 keypair and returns it\'s corresponding private key'
     method_option :name, desc: 'The name of the keypair', :required => true
     def create_keypair
       puts Stackit.aws.ec2.create_key_pair({
