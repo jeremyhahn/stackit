@@ -101,7 +101,7 @@ StackIT can be used as library in your own automation tools.
   ManagedStack.new({
     template: '/path/to/template.json',
     stack_name: 'mystack',
-    depends: 'otherstack',
+    depends: ['otherstack'],
     user_defined_parameters: {
       :param1 => 'myvalue',
       :param2 => 'something else'
