@@ -37,7 +37,7 @@ module Stackit
     end
 
     def [](key)
-      parameters[key] || outputs[key] || resources[key]
+      parameters[key.to_sym] || outputs[key.to_sym] || resources[key.to_sym]
     end
 
     def parameters
