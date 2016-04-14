@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 $:.push File.expand_path('../../lib', __FILE__)
-require 'stackit/cli/base_cli'
 require 'stackit/cli/stack_cli'
 require 'stackit/cli/stackit_cli'
 Stackit::StackitCli.start

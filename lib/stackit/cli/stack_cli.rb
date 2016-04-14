@@ -1,4 +1,5 @@
 require 'stackit'
+require 'stackit/cli/base_cli'
 require 'thor'
 
 module Stackit
