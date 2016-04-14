@@ -26,7 +26,7 @@ module Stackit
       end
   
       def response(response, message = 'Success', respond_to_key = 'stack_id')
-        if response.is_a?(::Seahorse::Client::Response)
+        if response.is_a?(::Seahorse::Client::Response) || response.is_a?(Stackit::ManagedStack::DRY_RUN_RESPONSE)
           if response.respond_to?(respond_to_key)
             success(response.send(respond_to_key))
           else
