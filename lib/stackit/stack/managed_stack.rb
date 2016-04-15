@@ -14,7 +14,6 @@ module Stackit
 
     def initialize(options={})
       super(options)
-      options = options.to_h.symbolize_keys!
       @template = create_template(options[:template])
       @user_defined_parameters = symbolized_user_defined_parameters(options[:user_defined_parameters])
       @parameter_map = symbolized_parameter_map(options[:parameter_map])
@@ -26,46 +25,8 @@ module Stackit
       @dry_run = options[:dry_run]
       @notifier = options[:notifier] || Stackit::ThorNotifier.new
       parse_file_parameters(options[:parameters_file]) if options[:parameters_file]
-    end
-
-    def symbolized_user_defined_parameters(params)
-      if params
-        params.symbolize_keys!
-      else
-        {}
-      end
-    end
-
-    def symbolized_parameter_map(param_map)
-      if param_map
-        param_map.symbolize_keys!
-      else
-        {}
-      end
-    end
-
-    def default_stack_name
-      self.class.name.demodulize
-    end
-
-    def create_template(t)
-      template_path = t ? t : File.join(Dir.pwd, 'cloudformation', "#{stack_name.underscore.dasherize}.json")
-      return unless File.exist?(template_path)
-      template = Template.new(
-        :cloudformation => cloudformation,
-        :template_path => template_path
-      )
-      template.parse!
-    end
-
-    def parse_file_parameters(parameters_file)
-      if File.exist?(parameters_file)
-        @file_parameters = {}
-        file_params = JSON.parse(File.read(parameters_file))
-        file_params.inject(@file_parameters) do |hash, param|
-          hash.merge!(param['ParameterKey'].to_sym => param['ParameterValue'])
-        end
-      end
+      create_stack_policy(options[:stack_policy])
+      create_stack_policy_during_update(options[:stack_policy_during_update])
     end
 
     def create!
@@ -178,6 +139,70 @@ module Stackit
     DRY_RUN_RESPONSE = Struct.new(:stack_id)
     REDACTED_TEXT = '****redacted****'
 
+    def symbolized_user_defined_parameters(params)
+      if params
+        params.symbolize_keys!
+      else
+        {}
+      end
+    end
+
+    def symbolized_parameter_map(param_map)
+      if param_map
+        param_map.symbolize_keys!
+      else
+        {}
+      end
+    end
+
+    def default_stack_name
+      self.class.name.demodulize
+    end
+
+    def create_template(t)
+      template_path = t ? t : File.join(Dir.pwd, 'cloudformation', "#{stack_name.underscore.dasherize}.json")
+      return unless File.exist?(template_path)
+      template = Template.new(
+        :cloudformation => cloudformation,
+        :template_path => template_path
+      )
+      template.parse!
+    end
+
+    def create_stack_policy(f)
+      policy_path = f ? f : File.join(Stackit.home, 'stackit', 'stack', 'default-stack-policy.json')
+      if policy_path =~ /^http/
+        self.stack_policy_url = policy_path
+      else
+        raise "Unable to locate policy: #{policy_path}" unless File.exist?(policy_path)
+        self.stack_policy_body = File.read(policy_path)
+      end
+    end
+
+    def create_stack_policy_during_update(f)
+      policy_path = f ? f : File.join(Dir.pwd, "#{stack_name}-update-policy.json")
+      if !File.exist?(policy_path)
+        Stackit.logger.warn "Unable to locate stack policy during update file: #{policy_path}"
+        return
+      end
+      if policy_path =~ /^http/
+        self.stack_policy_during_update_url = policy_path
+      else
+        raise "Unable to locate update policy: #{policy_path}" unless File.exist?(policy_path)
+        self.stack_policy_during_update_body = File.read(policy_path)
+      end
+    end
+
+    def parse_file_parameters(parameters_file)
+      if File.exist?(parameters_file)
+        @file_parameters = {}
+        file_params = JSON.parse(File.read(parameters_file))
+        file_params.inject(@file_parameters) do |hash, param|
+          hash.merge!(param['ParameterKey'].to_sym => param['ParameterValue'])
+        end
+      end
+    end
+
     def capabilities
       template.needs_iam_capability? ? ['CAPABILITY_IAM'] : []
     end
@@ -198,7 +223,7 @@ module Stackit
         opts[:stack_policy_body] = JSON.parse(opts[:stack_policy_body]) if opts[:stack_policy_body]
         opts[:stack_policy_during_update_body] = 
           JSON.parse(opts[:stack_policy_during_update_body]) if opts[:stack_policy_during_update_body]
-          pp opts
+        pp opts
       end
       response = dry_run ? dry_run_response : cloudformation.send(action, cloudformation_options)
       wait_for_stack if wait
@@ -225,7 +250,6 @@ module Stackit
     def merged_parameters
       merged_params = template.parsed_parameters
       return parsed_parameters unless depends.length
-      # merge file parameters
       merged_params.merge!(file_parameters) if file_parameters
       depends.each do |dependent_stack_name|
         this_stack = Stack.new({

@@ -46,7 +46,6 @@ LOGO
     no_commands do
 
       def init_cli
-
         Stackit.aws.region = options[:region] if options[:region]
         Stackit.environment = options[:environment].to_sym if options[:environment]
         Stackit.debug = !!options[:debug]

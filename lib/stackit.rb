@@ -16,8 +16,10 @@ module Stackit
 
     attr_accessor :aws
     attr_accessor :cloudformation
+    attr_accessor :logger
     attr_accessor :environment
     attr_accessor :debug
+    attr_accessor :home
 
     def aws
       @aws ||= Stackit::Aws.new
@@ -37,6 +39,10 @@ module Stackit
 
     def debug
       @debug ||= false
+    end
+
+    def home
+      Pathname.new(File.expand_path('stackit.gemspec', __dir__)).dirname
     end
 
   end

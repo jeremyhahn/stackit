@@ -14,7 +14,7 @@ module Stackit
 
     def parse!
       Stackit.logger.info "Parsing cloudformation template: #{template_path}"
-      if @template_path =~ /^https:\/\/s3\.amazonaws\.com/
+      if @template_path =~ /^http/
         @options[:template_url] = @template_path
       else
         @options[:template_body] = body
