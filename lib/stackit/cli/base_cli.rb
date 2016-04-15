@@ -28,21 +28,6 @@ module Stackit
       true
     end
 
-    desc 'version', 'Displays StackIT version'
-    def version
-      puts <<-LOGO
-  _____   _                 _      _______  _______ 
- (_____) (_)_              (_) _  (_______)(__ _ __)
-(_)___   (___) ____    ___ (_)(_)    (_)      (_)   
-  (___)_ (_)  (____) _(___)(___)     (_)      (_)   
-  ____(_)(_)_( )_( )(_)___ (_)(_)  __(_)__    (_)   
- (_____)  (__)(__)_) (____)(_) (_)(_______)   (_)  v#{Stackit::VERSION}
-
-Simple, elegant CloudFormation dependency management.
-
-LOGO
-    end
-
     no_commands do
 
       def init_cli
