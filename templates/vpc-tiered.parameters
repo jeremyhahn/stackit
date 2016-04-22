@@ -1,0 +1,90 @@
+[
+  {
+    "ParameterKey": "VpcName",
+    "ParameterValue": "StackIT"
+  },
+  {
+    "ParameterKey": "RemoteAdminNetwork",
+    "ParameterValue": "127.0.0.1/32"
+  },
+  {
+    "ParameterKey": "VpcCidrNetwork",
+    "ParameterValue": "172.16.0.0/16"
+  },
+  {
+    "ParameterKey": "PublicCidrAZ1",
+    "ParameterValue": "172.16.110.0/24"
+  },
+  {
+    "ParameterKey": "PublicCidrAZ2",
+    "ParameterValue": "172.16.120.0/24"
+  },
+  {
+    "ParameterKey": "PublicCidrAZ3",
+    "ParameterValue": "172.16.130.0/24"
+  },
+  {
+    "ParameterKey": "WebTierCidrAZ1",
+    "ParameterValue": "172.16.111.0/24"
+  },
+  {
+    "ParameterKey": "WebTierCidrAZ2",
+    "ParameterValue": "172.16.121.0/24"
+  },
+  {
+    "ParameterKey": "WebTierCidrAZ3",
+    "ParameterValue": "172.16.131.0/24"
+  },
+  {
+    "ParameterKey": "AppTierCidrAZ1",
+    "ParameterValue": "172.16.112.0/24"
+  },
+  {
+    "ParameterKey": "AppTierCidrAZ2",
+    "ParameterValue": "172.16.122.0/24"
+  },
+  {
+    "ParameterKey": "AppTierCidrAZ3",
+    "ParameterValue": "172.16.132.0/24"
+  },
+  {
+    "ParameterKey": "DatabaseTierCidrAZ1",
+    "ParameterValue": "172.16.113.0/24"
+  },
+  {
+    "ParameterKey": "DatabaseTierCidrAZ2",
+    "ParameterValue": "172.16.123.0/24"
+  },
+  {
+    "ParameterKey": "DatabaseTierCidrAZ3",
+    "ParameterValue": "172.16.133.0/24"
+  },
+  {
+    "ParameterKey": "AdministrationTierCidrAZ1",
+    "ParameterValue": "172.16.114.0/24"
+  },
+  {
+    "ParameterKey": "AdministrationTierCidrAZ2",
+    "ParameterValue": "172.16.124.0/24"
+  },
+  {
+    "ParameterKey": "AdministrationTierCidrAZ3",
+    "ParameterValue": "172.16.134.0/24"
+  },
+  {
+    "ParameterKey": "VpcAvailabilityZone1",
+    "ParameterValue": "us-east-1a"
+  },
+  {
+    "ParameterKey": "VpcAvailabilityZone2",
+    "ParameterValue": "us-east-1c"
+  },
+  {
+    "ParameterKey": "VpcAvailabilityZone3",
+    "ParameterValue": "us-east-1e"
+  },
+  {
+    "ParameterKey": "DevOpsBucketName",
+    "ParameterValue": "devops-automation"
+  }
+]

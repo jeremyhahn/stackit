@@ -17,6 +17,7 @@ module Stackit
     method_option :parameters, aliases: '-p', type: :hash, desc: 'Parameters supplied to the cloudformation template', default: {}
     method_option :parameters_file, desc: 'Parameters supplied to the cloudformation template'
     method_option :parameter_map, :aliases => '-pm', type: :hash, default: {}, desc: 'Parameter map used to direct dependent parameter values to stack template parameters'
+    method_option :disable_rollback, :type => :boolean, :default => false, :desc => 'Disable cloudformation rollback when creation fails'
     method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
     method_option :force, :desc => 'Force a stack update on unchanged templates'
     method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
@@ -45,6 +46,7 @@ module Stackit
     method_option :parameters, aliases: '-p', type: :hash, desc: 'Parameters supplied to the cloudformation template', default: {}
     method_option :parameters_file, desc: 'Parameters supplied to the cloudformation template'
     method_option :parameter_map, :aliases => '-pm', type: :hash, default: {}, desc: 'Parameter map used to direct dependent parameter values to stack template parameters'
+    method_option :disable_rollback, :type => :boolean, :default => false, :desc => 'Disable cloudformation rollback when update fails'
     method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
     method_option :force, :desc => 'Force a stack update on unchanged templates'
     method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'

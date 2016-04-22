@@ -89,7 +89,7 @@ module Stackit
     it 'understands when a template needs CAPABILITY_IAM' do
       template = Template.new({
         cloudformation: cloudformation,
-        template_path: 'spec/vpc.json'
+        template_path: real_template
       })
       template.parse!
       expect(template.needs_iam_capability?).to be_truthy

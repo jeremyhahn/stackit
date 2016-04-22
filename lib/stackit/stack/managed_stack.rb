@@ -14,16 +14,17 @@ module Stackit
 
     def initialize(options={})
       super(options)
-      @template = create_template(options[:template])
-      @user_defined_parameters = symbolized_user_defined_parameters(options[:user_defined_parameters])
-      @parameter_map = symbolized_parameter_map(options[:parameter_map])
-      @stack_name = options[:stack_name] || default_stack_name
-      @depends = options[:depends] || []
-      @debug = !!options[:debug] || Stackit.debug
-      @force = options[:force]
-      @wait = options[:wait]
-      @dry_run = options[:dry_run]
-      @notifier = options[:notifier] || Stackit::ThorNotifier.new
+      self.template = create_template(options[:template])
+      self.user_defined_parameters = symbolized_user_defined_parameters(options[:user_defined_parameters])
+      self.parameter_map = symbolized_parameter_map(options[:parameter_map])
+      self.stack_name = options[:stack_name] || default_stack_name
+      self.depends = options[:depends] || []
+      self.disable_rollback = self.debug ? true : !!options[:disable_rollback]
+      self.debug = !!options[:debug] || Stackit.debug
+      self.force = options[:force]
+      self.wait = options[:wait]
+      self.dry_run = options[:dry_run]
+      self.notifier = options[:notifier] || Stackit::ThorNotifier.new
       parse_file_parameters(options[:parameters_file]) if options[:parameters_file]
       create_stack_policy(options[:stack_policy])
       create_stack_policy_during_update(options[:stack_policy_during_update])

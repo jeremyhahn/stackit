@@ -14,7 +14,7 @@
       "ConstraintDescription" : "can contain only ASCII characters."
     },
 
-    "OfficeNetwork" : {
+    "RemoteAdminNetwork" : {
       "Description" : "The WAN IP address range of the office",
       "Type": "String",
       "MinLength": "9",
@@ -542,8 +542,8 @@
         "VpcId" : { "Ref" : "Vpc" },
         "GroupDescription" : "Enable SSH and ping from office and between nodes in the VPC",
         "SecurityGroupIngress": [
-          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "OfficeNetwork"}},
-          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : { "Ref" : "OfficeNetwork"}},
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "RemoteAdminNetwork"}},
+          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : { "Ref" : "RemoteAdminNetwork"}},
           {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "VpcCidrNetwork"}},
           {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : { "Ref" : "VpcCidrNetwork"}}
         ],

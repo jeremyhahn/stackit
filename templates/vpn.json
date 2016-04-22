@@ -20,7 +20,7 @@
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
 
-    "OfficeNetwork" : {
+    "RemoteAdminNetwork" : {
       "Description" : "The office CIDR where remote management will occur",
       "Type": "String",
       "MinLength": "9",

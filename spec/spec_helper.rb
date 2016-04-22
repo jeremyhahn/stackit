@@ -15,8 +15,8 @@ RSpec.shared_context 'Stubbed Responses' do
   let(:base_stack_name) { 'base-stack' }
   let(:new_stack_name) { 'new-stack' }
   let(:fake_template) { 'fake.json' }
-  let(:real_template) { 'spec/vpc.json' }
-  let(:real_parameters_file) { 'spec/vpc.parameters' }
+  let(:real_template) { 'templates/vpc.json' }
+  let(:real_parameters_file) { 'templates/vpc.parameters' }
 
   def stub_describe_stacks(stack_name = base_stack_name)
     cloudformation.stub_responses(:describe_stacks, {
