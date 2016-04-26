@@ -2,6 +2,7 @@ module Stackit
   class ManagedStack < Stack
 
     attr_accessor :template
+    attr_accessor :template_path
     attr_accessor :file_parameters
     attr_accessor :user_defined_parameters
     attr_accessor :parameter_map
@@ -14,7 +15,7 @@ module Stackit
 
     def initialize(options={})
       super(options)
-      self.template = create_template(options[:template])
+      self.template_path = options[:template]
       self.user_defined_parameters = symbolized_user_defined_parameters(options[:user_defined_parameters])
       self.parameter_map = symbolized_parameter_map(options[:parameter_map])
       self.stack_name = options[:stack_name] || default_stack_name
@@ -160,8 +161,9 @@ module Stackit
       self.class.name.demodulize
     end
 
-    def create_template(t)
+    def create_template(t, action)
       template_path = t ? t : File.join(Dir.pwd, 'cloudformation', "#{stack_name.underscore.dasherize}.json")
+      raise "Unable to locate template: #{template_path}" unless (template.nil? && action == :delete_stack)
       return unless File.exist?(template_path)
       template = Template.new(
         :cloudformation => cloudformation,
@@ -210,6 +212,7 @@ module Stackit
 
     def cloudformation_request(action)
       Stackit.logger.debug "ManagedStack CloudFormation API request: #{action}"
+      self.template = create_template(template_path, action);
       cloudformation_options = create_cloudformation_options(action)
       if debug
         Stackit.logger.debug "#{action} request parameters: "
