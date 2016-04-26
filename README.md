@@ -52,7 +52,7 @@ Your stack can `--depend` on existing stacks. Any resource, output, or parameter
 
 User defined parameters allow you to define the parameters yourself using the `--parameters` option. 
 
-> User defined parameters override file parameters.
+> User defined parameters override both file parameters and `--depends` parameters.
 
 ## Usage
 
@@ -63,26 +63,26 @@ StackIT ships with [Thor](http://whatisthor.com/) to provide a command line inte
     # show top level commands
     stackit help
 
-    # show options for create command
-    stackit help create
+    # show options for create-stack command
+    stackit help create-stack
 
-##### Create a stack using a parameter file
+###### Create a stack using a parameter file
 
     stackit create-stack --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters
 
-##### Create a stack using `--depends` to reference resource, output and parameter values in the "myvpc" stack
+###### Create a stack using `--depends` to reference resource, output and parameter values in the "myvpc" stack
 
     stackit create-stack --stack-name mystack --template mytemplate.json --depends myvpc
 
-##### Create a stack using user defined parameters
+###### Create a stack using user defined parameters
 
     stackit create-stack --stack-name mystack --template mytemplate.json --parameters param1:value1 param2:value2
 
-##### Create a stack using a parameter file, overriding parameters found in the "myvpc" resource, output or parameters.
+###### Create a stack using a parameter file, overriding parameters found in the "myvpc" resource, output or parameters.
 
     stackit create-stack --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters --depends myvpc
 
-##### Create a stack using a parameter file, overriding those parameters with mapped parameters in the "myvpc" stack, and override both of those with user defined parameters.
+###### Create a stack using a parameter file, overriding those parameters with mapped parameters in the "myvpc" stack, and override both of those with user defined parameters.
 
     stackit create-stack --stack-name mystack --template mytemplate.json --parameter-file mytemplate.parameters --depends myvpc --parameters param1:final_value
 
