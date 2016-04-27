@@ -163,8 +163,9 @@ module Stackit
 
     def create_template(t, action)
       template_path = t ? t : File.join(Dir.pwd, 'cloudformation', "#{stack_name.underscore.dasherize}.json")
-      raise "Unable to locate template: #{template_path}" unless (template.nil? && action == :delete_stack)
-      return unless File.exist?(template_path)
+      if !File.exist?(template_path)
+        raise "Unable to locate template: #{template_path}" unless action == :delete_stack
+      end
       template = Template.new(
         :cloudformation => cloudformation,
         :template_path => template_path
