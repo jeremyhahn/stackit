@@ -247,7 +247,9 @@ module Stackit
         {
           parameters: to_request_parameters(merged_parameters),
           capabilities: capabilities
-        }.merge(template.options).merge(update_stack_request_params)
+        }.merge(template.options).merge(update_stack_request_params).merge(
+          use_previous_template: template.options[:template_body].nil? && template.options[:template_url].nil?
+        )
       else
         delete_stack_request_params
       end

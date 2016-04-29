@@ -48,15 +48,18 @@ module Stackit
   protected
 
     def stack_name
-      return options[:stack_name] ||  "#{Stackit.environment}-#{options[:stack_name]}"
+      return options[:stack_name] ||  
+        "#{Stackit.environment}-#{options[:stack_name]}"
     end
 
     def template
-      return options[:template] || File.expand_path("#{options[:stack_name]}.json", template_dir)
+      return options[:template] ||
+        File.expand_path("#{options[:stack_name]}.json", template_dir)
     end
 
     def parameters_file
-      return options[:parameters_file || File.expand_path("#{options[:stack_name]}.parameters", template_dir)
+      return options[:parameters_file] ||
+        File.expand_path("#{options[:stack_name]}.parameters", template_dir)
     end
 
     def parameter_mappings

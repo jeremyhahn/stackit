@@ -32,7 +32,7 @@ module Stackit
       @capabilities = options[:capabilities]
       @tags = options[:tags]
       @on_failure = options[:on_failure]
-      @use_previous_template = options[:use_previous_template] || true
+      @use_previous_template = options[:use_previous_template]
       @retain_resources = options[:retain_resources]
     end
 
