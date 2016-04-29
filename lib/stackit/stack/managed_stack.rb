@@ -240,12 +240,12 @@ module Stackit
     def create_cloudformation_options(action)
       case action
       when :create_stack
-        create_stack_request_params.merge(
+        create_stack_request_params.merge(template.options).merge(
           parameters: to_request_parameters(merged_parameters),
           capabilities: capabilities
         )
       when :update_stack
-        update_stack_request_params.merge(
+        update_stack_request_params.merge(template.options).merge(
           parameters: to_request_parameters(merged_parameters),
           capabilities: capabilities,
           use_previous_template: template.options[:template_body].nil? && template.options[:template_url].nil?
