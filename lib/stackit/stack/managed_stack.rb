@@ -200,6 +200,7 @@ module Stackit
 
     def parse_file_parameters(parameters_file)
       if File.exist?(parameters_file)
+        Stackit.logger.info "Parsing cloudformation parameters file: #{parameters_file}"
         @file_parameters = {}
         file_params = JSON.parse(File.read(parameters_file))
         file_params.inject(@file_parameters) do |hash, param|
@@ -239,15 +240,14 @@ module Stackit
     def create_cloudformation_options(action)
       case action
       when :create_stack
-        {
+        create_stack_request_params.merge(
           parameters: to_request_parameters(merged_parameters),
           capabilities: capabilities
-        }.reverse_merge(template.options).reverse_merge(create_stack_request_params)
+        )
       when :update_stack
-        {
+        update_stack_request_params.merge(
           parameters: to_request_parameters(merged_parameters),
-          capabilities: capabilities
-        }.merge(template.options).merge(update_stack_request_params).merge(
+          capabilities: capabilities,
           use_previous_template: template.options[:template_body].nil? && template.options[:template_url].nil?
         )
       else
@@ -257,9 +257,8 @@ module Stackit
 
     def merged_parameters
       merged_params = template.parsed_parameters
-      return parsed_parameters unless depends.length
       merged_params.merge!(file_parameters) if file_parameters
-      depends.each do |dependent_stack_name|
+      depends.each do |dependent_stack_name|        
         this_stack = Stack.new({
           cloudformation: cloudformation,
           stack_name: dependent_stack_name
