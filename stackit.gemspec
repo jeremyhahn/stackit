@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency 'pry-byebug', '~> 2.0'
 
-  spec.add_runtime_dependency 'awsclient'
+  spec.add_runtime_dependency 'awsclient', '~> 0'
   spec.add_runtime_dependency 'aws-sdk', '~> 2'
   spec.add_runtime_dependency 'thor', '~> 0.19'
   spec.add_runtime_dependency 'activesupport', '~> 4.2'

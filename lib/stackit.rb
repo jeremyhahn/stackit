@@ -10,6 +10,7 @@ require "stackit/template"
 require "stackit/stack/default_notifier"
 require "stackit/stack"
 require "stackit/stack/managed_stack"
+require "stackit/stack/managed_stack_service"
 
 module Stackit
   class << self
