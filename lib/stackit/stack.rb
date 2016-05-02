@@ -22,18 +22,18 @@ module Stackit
 
     def initialize(options = {})
       options = options.to_h.symbolize_keys!
-      @cloudformation = options[:cloudformation] || Stackit.cloudformation
-      @stack_name = options[:stack_name]
-      @description = options[:description]
-      @parameters = options[:parameters]
-      @disable_rollback = options[:disable_rollback]
-      @notification_arns = options[:notification_arns]
-      @timeout_in_minutes = options[:timeout_in_minutes]
-      @capabilities = options[:capabilities]
-      @tags = options[:tags]
-      @on_failure = options[:on_failure]
-      @use_previous_template = options[:use_previous_template]
-      @retain_resources = options[:retain_resources]
+      self.cloudformation = options[:cloudformation] || Stackit.cloudformation
+      self.stack_name = options[:stack_name]
+      self.description = options[:description]
+      self.parameters = options[:parameters]
+      self.disable_rollback = options[:disable_rollback]
+      self.notification_arns = options[:notification_arns]
+      self.timeout_in_minutes = options[:timeout_in_minutes]
+      self.capabilities = options[:capabilities]
+      self.tags = options[:tags]
+      self.on_failure = options[:on_failure]
+      self.use_previous_template = options[:use_previous_template]
+      self.retain_resources = options[:retain_resources]
     end
 
     def [](key)

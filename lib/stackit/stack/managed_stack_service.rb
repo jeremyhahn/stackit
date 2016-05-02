@@ -14,6 +14,7 @@ module Stackit
         stack_name: stack_name,
         stack_policy: options[:stack_policy],
         depends: options[:depends],
+        user_defined_parameters: user_defined_parameters,
         parameters_file: parameters_file,
         parameter_map: parameter_mappings,
         wait: options[:wait],
@@ -30,6 +31,7 @@ module Stackit
         stack_policy: options[:stack_policy],
         stack_policy_during_update: options[:stack_policy_during_update],
         depends: options[:depends],
+        user_defined_parameters: user_defined_parameters,
         parameters_file: parameters_file,
         parameter_map: parameter_mappings,
         wait: options[:wait],
@@ -63,6 +65,10 @@ module Stackit
     end
 
     def parameter_mappings
+      {}
+    end
+
+    def user_defined_parameters
       {}
     end
 
