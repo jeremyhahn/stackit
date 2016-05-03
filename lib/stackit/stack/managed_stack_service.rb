@@ -50,6 +50,10 @@ module Stackit
       dir = options[:template_dir] ? options[:template_dir] : __dir__
     end
 
+    def disable_rollback
+      true
+    end
+
     def stack
       ManagedStack.new(
         template: template,
@@ -60,10 +64,18 @@ module Stackit
         user_defined_parameters: user_defined_parameters,
         parameters_file: parameters_file,
         parameter_map: parameter_mappings,
+        disable_rollback: !!options[:debug] ? true : (!!options[:disable_rollback] || disable_rollback),
         wait: options[:wait],
         force: options[:force],
         dry_run: options[:dry_run],
-        debug: !!options[:debug]
+        debug: !!options[:debug],
+        timeout_in_minutes: options[:timeout_in_minutes],
+        notification_arns: options[:notification_arns],
+        capabilities: options[:capabilities],
+        tags: options[:tags],
+        on_failure: options[:on_failure],
+        use_previous_template: options[:use_previous_template],
+        retain_resources: options[:retain_resources]
       )
     end
 
@@ -85,6 +97,14 @@ module Stackit
         value = s[key]
         return value unless value.nil?
       end
+    end
+
+    def opsworks_service_role_arn(key = :OpsWorksServiceRole)
+      "arn:aws:iam::#{Stackit.aws.account_id}:role/#{resolve_parameter(key)}"
+    end
+
+    def opsworks_cookbook_source(key = :DevOpsBucket)
+      "https://s3.amazonaws.com/#{resolve_parameter(key)}/cookbooks.tar.gz"
     end
 
   end
