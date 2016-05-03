@@ -16,6 +16,9 @@ module Stackit
     attr_accessor :stack_policy_url
     attr_accessor :stack_policy_during_update_body
     attr_accessor :stack_policy_during_update_url
+    attr_accessor :notification_arns
+    attr_accessor :capabilities
+    attr_accessor :tags
     attr_accessor :on_failure
     attr_accessor :use_previous_template
     attr_accessor :retain_resources
