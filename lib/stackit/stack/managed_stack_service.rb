@@ -18,9 +18,7 @@ module Stackit
     end
 
     def delete!
-      Stackit::ManagedStack.new(
-        stack_name: stack_name
-      ).delete!
+      stack.delete!
     end
 
   protected
@@ -71,6 +69,7 @@ module Stackit
 
     def depends_stacks
       stacks = []
+      return stacks unless options[:depends]
       options[:depends].each do |stack|
         stacks << Stackit::Stack.new(stack_name: stack)
       end
