@@ -1,6 +1,8 @@
 module Stackit
   class ManagedStack < Stack
 
+    include Wait
+
     attr_accessor :template
     attr_accessor :template_path
     attr_accessor :file_parameters

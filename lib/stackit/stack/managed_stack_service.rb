@@ -61,7 +61,7 @@ module Stackit
         stack_policy: options[:stack_policy],
         stack_policy_during_update: options[:stack_policy_during_update],
         depends: options[:depends],
-        user_defined_parameters: user_defined_parameters,
+        user_defined_parameters: user_defined_parameters.merge!(options[:parameters]),
         parameters_file: parameters_file,
         parameter_map: parameter_mappings,
         disable_rollback: !!options[:debug] ? true : (!!options[:disable_rollback] || disable_rollback),
