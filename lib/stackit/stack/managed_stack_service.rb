@@ -99,6 +99,17 @@ module Stackit
       end
     end
 
+    def resolve_parameters(keys)
+      values = []
+      depends_stacks.each do |s|
+        keys.each do |key|
+          value = s[key]
+          values << value unless value.nil?
+        end
+      end
+      values.join(',')
+    end
+
     def opsworks_service_role_arn(key = :OpsWorksServiceRole)
       "arn:aws:iam::#{Stackit.aws.account_id}:role/#{resolve_parameter(key)}"
     end
