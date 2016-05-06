@@ -55,13 +55,15 @@ module Stackit
     end
 
     def stack
+      params = user_defined_parameters
+      params.merge!(options[:parameters]) if options[:parameters]
       ManagedStack.new(
         template: template,
         stack_name: stack_name,
         stack_policy: options[:stack_policy],
         stack_policy_during_update: options[:stack_policy_during_update],
         depends: options[:depends],
-        user_defined_parameters: user_defined_parameters.merge!(options[:parameters]),
+        user_defined_parameters: params,
         parameters_file: parameters_file,
         parameter_map: parameter_mappings,
         disable_rollback: !!options[:debug] ? true : (!!options[:disable_rollback] || disable_rollback),
