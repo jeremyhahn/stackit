@@ -10,32 +10,42 @@ module Stackit
     end
 
     def create!
-      stack.create!
+      final_stack.create!
     end
 
     def update!
-      stack.update!
+      final_stack.update!
     end
 
     def delete!
-      stack.delete!
+      final_stack.delete!
     end
 
   protected
 
     def stack_name
-      return options[:stack_name] ||  
-        "#{Stackit.environment}-#{options[:stack_name]}"
+      options[:stack_name] || "#{Stackit.environment}-#{options[:stack_name]}"
     end
 
     def template
-      return options[:template] ||
-        File.expand_path("#{options[:stack_name]}.json", template_dir)
+      options[:template] || File.expand_path("#{options[:stack_name]}.json", template_dir)
+    end
+
+    def stack_policy
+      options[:template]
+    end
+
+    def stack_policy_during_update
+      options[:stack_policy_during_update]
     end
 
     def parameters_file
       return options[:parameters_file] ||
         File.expand_path("#{options[:stack_name]}.parameters", template_dir)
+    end
+
+    def depends
+      options[:depends]
     end
 
     def parameter_mappings
@@ -51,43 +61,84 @@ module Stackit
     end
 
     def disable_rollback
-      true
+      !!options[:debug] ? true : !!options[:disable_rollback]
+    end
+
+    def wait
+      options[:wait]
+    end
+
+    def force
+      options[:force]
+    end
+
+    def dry_run
+       options[:dry_run]
+    end
+
+    def debug
+      !!options[:debug]
+    end
+
+    def timeout_in_minutes
+      options[:timeout_in_minutes]
+    end
+
+    def notification_arns
+      options[:notification_arns]
+    end
+
+    def capabilities
+      options[:capabilities]
+    end
+
+    def tags
+      options[:tags]
+    end
+
+    def on_failure
+      options[:on_failure]
+    end
+
+    def retain_resources
+      options[:retain_resources]
+    end
+
+    def use_previous_template
+      options[:use_previous_template]
     end
 
     def stack
-      params = user_defined_parameters
-      params.merge!(options[:parameters]) if options[:parameters]
-      ManagedStack.new(
+      @stack ||= ManagedStack.new(
         template: template,
         stack_name: stack_name,
-        stack_policy: options[:stack_policy],
-        stack_policy_during_update: options[:stack_policy_during_update],
-        depends: options[:depends],
-        user_defined_parameters: params,
+        stack_policy: stack_policy,
+        stack_policy_during_update: stack_policy_during_update,
+        depends: depends,
         parameters_file: parameters_file,
         parameter_map: parameter_mappings,
-        disable_rollback: !!options[:debug] ? true : (!!options[:disable_rollback] || disable_rollback),
-        wait: options[:wait],
-        force: options[:force],
-        dry_run: options[:dry_run],
-        debug: !!options[:debug],
-        timeout_in_minutes: options[:timeout_in_minutes],
-        notification_arns: options[:notification_arns],
-        capabilities: options[:capabilities],
-        tags: options[:tags],
-        on_failure: options[:on_failure],
-        use_previous_template: options[:use_previous_template],
-        retain_resources: options[:retain_resources]
+        disable_rollback: disable_rollback,
+        wait: wait,
+        force: force,
+        dry_run: dry_run,
+        debug: debug,
+        timeout_in_minutes: timeout_in_minutes,
+        notification_arns: notification_arns,
+        capabilities: capabilities,
+        tags: tags,
+        on_failure: on_failure,
+        use_previous_template: use_previous_template,
+        retain_resources: retain_resources
       )
     end
 
     def depends_stacks
-      stacks = []
-      return stacks unless options[:depends]
+      return @depends_stacks unless @depends_stacks.nil?
+      @depends_stacks = []
+      return @depends_stacks unless options[:depends]
       options[:depends].each do |stack|
-        stacks << Stackit::Stack.new(stack_name: stack)
+        @depends_stacks << Stackit::Stack.new(stack_name: stack)
       end
-      stacks
     end
 
     def stacks
@@ -96,7 +147,7 @@ module Stackit
 
     def resolve_parameter(key)
       depends_stacks.each do |s|
-        value = s[key]
+        value = s[key.to_s]
         return value unless value.nil?
       end
     end
@@ -105,19 +156,20 @@ module Stackit
       values = []
       depends_stacks.each do |s|
         keys.each do |key|
-          value = s[key]
+          value = s[key.to_s]
           values << value unless value.nil?
         end
       end
       values.join(',')
     end
 
-    def opsworks_service_role_arn(key = :OpsWorksServiceRole)
-      "arn:aws:iam::#{Stackit.aws.account_id}:role/#{resolve_parameter(key)}"
-    end
+  private
 
-    def opsworks_cookbook_source(key = :DevOpsBucket)
-      "https://s3.amazonaws.com/#{resolve_parameter(key)}/cookbooks.tar.gz"
+    def final_stack
+      params = user_defined_parameters
+      params.merge!(options[:parameters]) if options[:parameters]
+      stack.instance_variable_set(:@user_defined_parameters, user_defined_parameters)
+      stack
     end
 
   end

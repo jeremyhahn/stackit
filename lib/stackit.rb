@@ -49,3 +49,5 @@ module Stackit
 
   end
 end
+
+module Stackit::Mixin; end
