@@ -5,30 +5,44 @@ module Stackit::Mixin::Tier
   include Stackit::Mixin::AvailabilityZone
 
   attr_accessor :tier
+  attr_accessor :tier_map
 
   def tier=(tier)
     @tier = tier.to_sym
   end
 
-  def random_tier_az
-    random_az ||= random_az_as_hash
+  def tier_map=(map)
+    @tier_map = map
   end
 
-  def random_tier_az_sym
-    random_tier_az.keys[0].to_sym
+  def selected_subnet_sym
+    tier_map[tier][selected_az_sym]
   end
 
-  def random_tier_az_value
-   random_tier_az.values[0]
+  def selected_subnet
+    resolve_parameter(selected_subnet_sym)
+  end
+
+  def subnets
+    resolve_parameters(tier_map[tier].values)
+  end
+
+  def random_subnet
+    random_az_and_subnet[:subnet]
+  end
+
+  def random_subnet_sym
+    random_az = random_az_hash
+    random_az_sym = random_az.keys[0]
+    tier_map[tier][random_az_sym]
   end
 
   def random_az_and_subnet
-    random_az = random_az_as_hash
-    random_az_sym = random_az.keys[0].to_sym
+    random_az = random_az_hash
+    random_az_sym = random_az.keys[0]
     random_az_value = random_az.values[0]
-    az_subnet_mapping = az_subnet_map(tier)
-    selected_subnet_key = az_subnet_mapping[random_az_sym]
-    resolved_subnet = resolve_parameter(selected_subnet_key)
+    selected_subnet_sym = tier_map[tier][random_az_sym]
+    resolved_subnet = resolve_parameter(selected_subnet_sym)
     {
       :az => random_az_value,
       :subnet => resolved_subnet
