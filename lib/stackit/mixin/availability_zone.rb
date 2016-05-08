@@ -1,5 +1,13 @@
 module Stackit::Mixin::AvailabilityZone
 
+  attr_accessor :vpc_az_stack_keys
+
+  def vpc_az_stack_keys=(keys)
+    @vpc_az_stack_keys = keys.each do { |key|
+      key = key.to_sym
+    }
+  end
+
   def selected_az_sym
     selected_az.keys[0].to_sym
   end
@@ -18,8 +26,8 @@ module Stackit::Mixin::AvailabilityZone
     resolve_parameters(keys).split(',').sample
   end
 
-  def random_az_as_hash(keys = default_az_keys)
-    sampled_az_key = default_az_keys.sample
+  def random_az_as_hash
+    sampled_az_key = az_keys.sample
     sampled_az_value = resolve_parameter(sampled_az_key.to_sym)
     {
       sampled_az_key => sampled_az_value
@@ -28,8 +36,8 @@ module Stackit::Mixin::AvailabilityZone
 
  private
 
-  def default_az_keys
-    [:VpcAvailabilityZone1, :VpcAvailabilityZone2, :VpcAvailabilityZone3]
+  def az_keys
+    vpc_az_stack_keys || [:VpcAvailabilityZone1, :VpcAvailabilityZone2, :VpcAvailabilityZone3]
   end
 
   def selected_az
