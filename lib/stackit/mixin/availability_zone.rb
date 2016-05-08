@@ -8,6 +8,10 @@ module Stackit::Mixin::AvailabilityZone
     }
   end
 
+  def availability_zones
+    resolve_parameters(az_syms)
+  end
+
   def selected_az_sym
     selected_az_hash.keys[0].to_sym
   end
