@@ -271,6 +271,9 @@ module Stackit
           merged_params.merge!(param_name => this_stack[mapped_key(param_name)])
         end
       end
+      user_defined_parameters.each { |k, v|
+        user_defined_parameters[k] = v.to_s
+      }
       merged_params.merge!(user_defined_parameters)
     end
 

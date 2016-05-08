@@ -51,3 +51,5 @@ module Stackit
 end
 
 module Stackit::Mixin; end
+
+require "stackit/stack/opsworks_managed_stack_service"

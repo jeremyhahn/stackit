@@ -139,6 +139,7 @@ module Stackit
       options[:depends].each do |stack|
         @depends_stacks << Stackit::Stack.new(stack_name: stack)
       end
+      @depends_stacks
     end
 
     def stacks
@@ -146,10 +147,11 @@ module Stackit
     end
 
     def resolve_parameter(key)
-      depends_stacks.each do |s|
-        value = s[key.to_s]
+      depends_stacks.each do |_stack|
+        value = _stack[key.to_s]
         return value unless value.nil?
       end
+      nil
     end
 
     def resolve_parameters(keys)
