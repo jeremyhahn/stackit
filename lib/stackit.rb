@@ -1,5 +1,4 @@
 require "logger"
-require "pp"
 require "json"
 require "active_support"
 require "active_support/all"
@@ -12,6 +11,7 @@ require "stackit/wait"
 require "stackit/stack"
 require "stackit/stack/managed_stack"
 require "stackit/stack/managed_stack_service"
+require "stackit/stack/parameter_resolver"
 
 module Stackit
   class << self

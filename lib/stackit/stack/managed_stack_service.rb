@@ -147,22 +147,11 @@ module Stackit
     end
 
     def resolve_parameter(key)
-      depends_stacks.each do |_stack|
-        value = _stack[key.to_s]
-        return value unless value.nil?
-      end
-      nil
+      Stackit::ParameterResolver.new(depends_stacks).resolve(key)
     end
 
     def resolve_parameters(keys)
-      values = []
-      depends_stacks.each do |s|
-        keys.each do |key|
-          value = s[key.to_s]
-          values << value unless value.nil?
-        end
-      end
-      values.join(',')
+      Stackit::ParameterResolver.new(depends_stacks).resolve(keys)
     end
 
   private
