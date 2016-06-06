@@ -162,7 +162,7 @@ module Stackit
 
     def to_request_parameters(params = parameters)
       params.map do |k, v|
-        if v == :use_previous_value
+        if v == :use_previous_value || v == 'use_previous_value'
           { 'parameter_key' => k, 'use_previous_value' => true }
         else
           { 'parameter_key' => k, 'parameter_value' => v || '' }
