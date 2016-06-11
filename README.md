@@ -42,7 +42,7 @@ File parameters work just like the default AWS CLI parameters file. Simply speci
 
 ##### Existing CloudFormation Stacks
 
-Your stack can `--depend` on existing stacks. Any resource, output, or parameter whose ID matches a parameter key in the template will automatically have it's value passed into the stack during management.
+Your stack can `--depends` on existing stacks. Any resource, output, or parameter whose ID matches a parameter key in the template will automatically have it's value passed into the stack during creation/update.
 
 > Parameter values mapped using `--depends` override parameters defined in the parameter file.
 
@@ -95,7 +95,7 @@ You may optionally map parameters that don't have matching keys. For example, le
 
 ### Library
 
-StackIT can be used as library in your own automation tools.
+StackIT can be used as a library in your own automation tools.
 
 ```ruby
   ManagedStack.new({
@@ -108,6 +108,63 @@ StackIT can be used as library in your own automation tools.
     }
   }).create!
 ```
+
+```ruby
+module MyToolkit::MyStack
+
+  class Service < Stackit::OpsWorksManagedStackService
+
+    def initialize(options = {})
+      super(options)
+    end
+
+    def stack_name
+      options[:stack_name] || "#{Stackit.environment}-mystack"
+    end
+
+    def template
+      options[:template] || "#{Stackit.home}/mytoolkit/mystack/template.json"
+    end
+
+    def user_defined_parameters
+      {
+        :StackEnvironment => Stackit.environment,
+        :KeyPair => "#{Stackit.environment}-myapp",
+        :OpsWorksStackName => stack_name,
+        :OpsWorksServiceRoleArn => opsworks_service_role_arn,
+        :UseOpsworksSecurityGroups => "false",
+        :OpsWorksDefaultOs => "Amazon Linux 2016.03",
+        :OpsWorksDefaultRootDeviceType => 'ebs',
+        :OpsWorksConfigureRunlist => "mycookbook::configure",
+        :OpsWorksDeployRunlist => "mycookbook::deploy",
+        :OpsWorksSetupRunlist => "mycookbook::setup",
+        :OpsWorksShutdownRunlist => "mycookbook::shutdown",
+        :OpsWorksUndeployRunlist => "mycookbook::undeploy",
+        :S3CookbookSource => 'https://s3.amazonaws.com/devops-automation/cookbooks.tar.gz',
+        :EbsVolumeType => 'gp2',
+        :EbsVolumeSize => 140 # GB
+      }
+    end
+
+    def opsworks_stack_id
+      Stackit::ParameterResolver.new(stack).resolve(:OpsWorksStack)
+    end
+
+    def opsworks_layer_id
+      Stackit::ParameterResolver.new(stack).resolve(:OpsWorksLayer)
+    end
+
+  end
+end
+
+service = MyToolkit::MyStack::Service.new
+service.create! # creates the stack
+service.update! # updates the stack
+service.delete! # deletes the stack
+
+```
+
+At this point, you may be interested in my [awskit](https://github.com/jeremyhahn/awskit) project that generates a DevOps toolkit based on stackit.
 
 ## Development
 
