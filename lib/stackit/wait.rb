@@ -4,7 +4,7 @@ module Stackit
 
   module Wait
 
-    def wait_until_stack_info_has_key(key)
+    def wait_until_stack_has_key(key)
       Stackit.logger.debug "Waiting until stack #{stack_name} has key #{key}..."
       wait_for(timeout: 15.minutes) do
         stack = Stack.new(stack_name: stack_name).hydrate!
@@ -51,7 +51,7 @@ module Stackit
       end
     end
 
-  private
+  protected
 
     def wait_for(opts={})
       raise ArgumentError, 'block expected' unless block_given?

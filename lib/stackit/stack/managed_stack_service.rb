@@ -21,8 +21,6 @@ module Stackit
       final_stack.delete!
     end
 
-  protected
-
     def stack_name
       options[:stack_name] || "#{Stackit.environment}-#{options[:stack_name]}"
     end
