@@ -1,11 +1,26 @@
 module Stackit::Mixin::AvailabilityZone
 
+  attr_accessor :az
   attr_accessor :az_syms
+
+  def az=(az)
+    @az = az || az_syms[0]
+  end
 
   def az_syms=(keys)
     @az_syms = keys.each{ |key|
       key = key.to_sym
     }
+  end
+
+  def az_hash
+    {
+      az_sym => resolve_parameter(az_sym)
+    }
+  end
+
+  def availability_zone
+    resolve_parameter(az)
   end
 
   def availability_zones

@@ -15,16 +15,20 @@ module Stackit::Mixin::Tier
     @tier_map = map
   end
 
+  def subnet
+    resolve_parameter(tier_map[tier][az])
+  end
+
+  def subnets
+    resolve_parameters(tier_map[tier].values)
+  end
+
   def selected_subnet_sym
     tier_map[tier][selected_az_sym]
   end
 
   def selected_subnet
     resolve_parameter(selected_subnet_sym)
-  end
-
-  def subnets
-    resolve_parameters(tier_map[tier].values)
   end
 
   def random_subnet
