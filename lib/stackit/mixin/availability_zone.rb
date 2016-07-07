@@ -1,6 +1,7 @@
 module Stackit::Mixin::AvailabilityZone
 
   attr_accessor :az
+  attr_accessor :az_id
   attr_accessor :az_syms
 
   def az=(az)
