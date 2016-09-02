@@ -11,17 +11,17 @@ module Stackit
     end
 
     def create!
-      stack_action = :create!
+      self.stack_action = :create!
       final_stack.create!
     end
 
     def update!
-      stack_action = :update!
+      self.stack_action = :update!
       final_stack.update!
     end
 
     def delete!
-      stack_action = :delete!
+      self.stack_action = :delete!
       final_stack.delete!
     end
 
