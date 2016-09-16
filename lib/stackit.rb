@@ -24,8 +24,8 @@ module Stackit
     attr_accessor :debug
     attr_accessor :home
 
-    def aws
-      @aws ||= Stackit::Aws.new
+    def aws(options)
+      @aws ||= Stackit::Aws.new(options)
     end
 
     def aws=(aws)
