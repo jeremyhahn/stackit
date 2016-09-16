@@ -28,8 +28,12 @@ module Stackit
       @aws ||= Stackit::Aws.new
     end
 
+    def aws=(aws)
+      @aws = aws
+    end
+
     def cloudformation
-      @cloudformation ||= Stackit::Aws.new.cloudformation
+      @cloudformation ||= aws.cloudformation
     end
 
     def logger
