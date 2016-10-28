@@ -5,8 +5,11 @@ require 'thor'
 module Stackit
   class StackCli < BaseCli
 
+    attr_accessor :notifier
+
     def initialize(*args)
       super(*args)
+      self.notifier = Stackit::ThorNotifier.new(*args)
     end
 
     desc 'create-stack', 'Creates a new CloudFormation stack'
