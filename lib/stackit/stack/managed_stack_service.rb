@@ -50,6 +50,12 @@ module Stackit
       options[:depends]
     end
 
+    def depends_on(deps)
+      if options[:depends] && options[:depends].empty?
+        options[:depends] = deps
+      end
+    end
+
     def parameter_mappings
       {}
     end
