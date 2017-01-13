@@ -1,3 +1,3 @@
 module Stackit
-  VERSION = "0.3.17"
+  VERSION = "0.3.19"
 end

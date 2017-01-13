@@ -7,7 +7,7 @@ module Stackit
     attr_accessor :stack_action
 
     def initialize(options)
-      self.options = options
+      self.options = options || {}
     end
 
     def create!
@@ -23,6 +23,11 @@ module Stackit
     def delete!
       self.stack_action = :delete!
       final_stack.delete!
+    end
+
+    def change_set!
+      self.stack_action = :change_set!
+      final_stack.change_set!
     end
 
     def stack_name
@@ -51,9 +56,7 @@ module Stackit
     end
 
     def depends_on(deps)
-      if options[:depends] && options[:depends].empty?
-        options[:depends] = deps
-      end
+      options[:depends] = deps
     end
 
     def parameter_mappings
@@ -116,6 +119,10 @@ module Stackit
       options[:use_previous_template]
     end
 
+    def change_set_name
+      options[:change_set_name]
+    end
+
     def stack
       @stack ||= ManagedStack.new(
         template: template,
@@ -136,7 +143,8 @@ module Stackit
         tags: tags,
         on_failure: on_failure,
         use_previous_template: use_previous_template,
-        retain_resources: retain_resources
+        retain_resources: retain_resources,
+        change_set_name: change_set_name
       )
     end
 
@@ -155,10 +163,12 @@ module Stackit
     end
 
     def resolve_parameter(key)
+      Stackit.logger.debug "Resolving parameter: #{key}"
       Stackit::ParameterResolver.new(depends_stacks).resolve(key)
     end
 
     def resolve_parameters(keys)
+      Stackit.logger.debug "Resolving parameters: #{keys.join(', ')}"
       Stackit::ParameterResolver.new(depends_stacks).resolve(keys)
     end
 

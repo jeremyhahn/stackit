@@ -127,6 +127,20 @@ module Stackit
       describe != nil
     end
 
+    def change_set!
+      begin
+        response = cloudformation_request(:create_change_set)
+        notifier.response(response)
+      rescue ::Aws::CloudFormation::Errors::AlreadyExistsException => e
+        notifier.backtrace(e) if Stackit.debug
+        notifier.error(e.message)
+      rescue ::Aws::CloudFormation::Errors::ValidationError => e
+        notifier.backtrace(e) if Stackit.debug
+        notifier.error(e.message)
+      end
+      response
+    end
+
     def describe
       response = cloudformation_request(:describe_stacks)
       if response && response[:stacks]
@@ -252,8 +266,14 @@ module Stackit
           capabilities: capabilities,
           use_previous_template: template.options[:template_body].nil? && template.options[:template_url].nil?
         )
-      else
+      when :delete_stack
         delete_stack_request_params
+      when :create_change_set
+        change_set_request_params.merge(template.options).merge(
+          parameters: to_request_parameters(merged_parameters),
+          capabilities: capabilities,
+          use_previous_template: template.options[:template_body].nil? && template.options[:template_url].nil?
+        )
       end
     end
 

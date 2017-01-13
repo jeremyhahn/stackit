@@ -22,6 +22,7 @@ module Stackit
     attr_accessor :on_failure
     attr_accessor :use_previous_template
     attr_accessor :retain_resources
+    attr_accessor :change_set_name
 
     def initialize(options = {})
       options = options.to_h.symbolize_keys!
@@ -37,6 +38,7 @@ module Stackit
       self.on_failure = options[:on_failure]
       self.use_previous_template = options[:use_previous_template]
       self.retain_resources = options[:retain_resources]
+      self.change_set_name = options[:change_set_name]
     end
 
     def [](key)
@@ -140,6 +142,17 @@ module Stackit
     {
       stack_name: stack_name,
       retain_resources: retain_resources
+    }
+    end
+
+    def change_set_request_params
+    {
+      change_set_name: change_set_name || "#{stack_name}#{Time.now.strftime("%m%d%Y%H%M%S")}",
+      stack_name: stack_name,
+      use_previous_template: use_previous_template,
+      parameters: to_request_parameters,
+      notification_arns: notification_arns,
+      tags: to_request_tags
     }
     end
 
