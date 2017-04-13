@@ -16,7 +16,7 @@ module Stackit::Generate
       self.cidr = options[:cidr] || Stackit.environment_config[:cidr]
       cidr_pieces = cidr.split('.')
       self.cidr_network = "#{cidr_pieces[0]}.#{cidr_pieces[1]}"
-      self.toolkit_namespace = Stackit.toolkit_namespace
+      self.toolkit_namespace = options[:toolkit]
       self.module_name = options[:module_name]
       self.tier_name = options[:tier_name]
       self.stack_type = options[:stack_type]
@@ -40,6 +40,8 @@ module Stackit::Generate
     def initialize(*args)
       super(*args)
     end
+
+    class_option :toolkit, desc: 'Optional toolkit namespace. Defaults to the current toolkit namespace'
 
     def self.initialize_cli
       Thor.desc "generate", "Performs code and template scaffolding"
@@ -89,6 +91,7 @@ module Stackit::Generate
       stack_path = "#{options[:output]}/vpc"
       Dir.mkdir stack_path unless File.exist?(stack_path)
       template_binding = StackTemplateBinding.new(
+        :toolkit => toolkit_namespace,
         :module_name => module_name,
         :stack_type => stack_type.downcase,
         :vpc_name => vpc_name,
@@ -118,6 +121,7 @@ module Stackit::Generate
     def stack
       stack_path = "#{options[:output]}/#{options[:type]}"
       template_binding = StackTemplateBinding.new(
+        :toolkit => toolkit_namespace,
         :module_name => module_name,
         :stack_type => stack_type.downcase,
         :tier_name => options[:tier],
@@ -144,6 +148,7 @@ module Stackit::Generate
     def pipeline
       stack_path = "#{options[:output]}/#{options[:type]}"
       template_binding = StackTemplateBinding.new(
+        :toolkit => toolkit_namespace,
         :module_name => module_name,
         :stack_type => stack_type.downcase,
         :tier_name => options[:tier],
@@ -160,6 +165,10 @@ module Stackit::Generate
     end
 
     no_commands do
+
+      def toolkit_namespace
+        options[:toolkit] ? options[:toolkit].capitalize : Stackit.toolkit_namespace
+      end
 
       def public_hosted_zone_name
         options[:public_hosted_zone_name] || "#{Stackit.environment}.#{vpc_name}.com"

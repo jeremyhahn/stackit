@@ -27,7 +27,6 @@ module <%= toolkit_namespace %>::<%= module_name %>
 
       Stackit::Cookbooks::Service.new(options.merge(
         vpc: stack_name,
-        cookbooks: options[:cookbooks]
       )).deploy
 
       services.each do |service|

@@ -29,6 +29,7 @@ module Stackit
     attr_accessor :debug
     attr_accessor :home
     attr_accessor :configuration_file
+    attr_accessor :toolkit_name
 
     def aws(options = {})
       @aws ||= Stackit::Aws.new(options)
@@ -56,36 +57,42 @@ module Stackit
 
     def configuration=(config_file)
         self.configuration_file = config_file
+        Stackit.logger.debug "Configuration: #{configuration_file}"
         @configuration = ::Settings.read(config_file)
     end
 
     def configuration
       @configuration ||= begin
         if File.file?("#{ENV['HOME']}/stackit-#{Stackit.environment}.yml")
-          file = "#{ENV['HOME']}/stackit-#{Stackit.environment}.yml"
+          self.configuration_file = "#{ENV['HOME']}/stackit-#{Stackit.environment}.yml"
         elsif File.file?("#{ENV['HOME']}/stackit-#{Stackit.environment}.yml")
-          file = "#{ENV['HOME']}/stackit-#{Stackit.environment}.yml"
+          self.configuration_file = "#{ENV['HOME']}/stackit-#{Stackit.environment}.yml"
         elsif File.file?("#{ENV['HOME']}/stackit.yml")
-          file = "#{ENV['HOME']}/stackit.yml"
+          self.configuration_file = "#{ENV['HOME']}/stackit.yml"
         elsif File.file?("./stackit.yml")
-          file = "./stackit.yml"
+          self.configuration_file = "./stackit.yml"
         else
           raise "Unable to locate stackit configuration file"
         end
-        self.configuration_file = file
-        logger.debug "Configuration file: #{file}"  
-        ::Settings.read(file)
+        logger.debug "Configuration: #{configuration_file}"  
+        ::Settings.read(configuration_file)
       end
     end
 
+    def toolkit_name
+      Stackit.configuration[:global][:toolkit][:name]
+    end
+
     def toolkit_namespace
-      Stackit.configuration[:global][:toolkit][:name].capitalize
+      toolkit_name.capitalize
     end
 
     def environment_config
-      conf = Stackit.configuration[Stackit.environment]
-      raise "Unable to load configuration for environment: '#{Stackit.environment}'" if conf.nil?
-      conf
+      @environment_config ||= begin
+        conf = Stackit.configuration[Stackit.environment]
+        raise "Unable to load configuration for environment: '#{Stackit.environment}'" if conf.nil?
+        conf
+      end
     end
 
   end

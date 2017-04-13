@@ -4,6 +4,8 @@ require '<%= toolkit_name %>/version'
 module <%= toolkit_module_name %>
   class << self
 
+    include Stackit
+
     attr_accessor :home
     attr_accessor :logger
     attr_accessor :aws

@@ -17,13 +17,13 @@ module Stackit
       init_cli
     end
 
-    def self.banner(task, namespace = true, subcommand = true)
-      "#{basename} #{task.usage}"
-    end
+    #def self.banner(task, namespace = true, subcommand = true)
+    #  "#{basename} #{task.usage}"
+    #end
 
-    def self.subcommand_prefix
-      self.name.gsub(%r{.*::}, '').gsub(%r{^[A-Z]}) { |match| match[0].downcase }.gsub(%r{[A-Z]}) { |match| "-#{match[0].downcase}" }
-    end
+    #def self.subcommand_prefix
+    #  self.name.gsub(%r{.*::}, '').gsub(%r{^[A-Z]}) { |match| match[0].downcase }.gsub(%r{[A-Z]}) { |match| "-#{match[0].downcase}" }
+    #end
 
     def self.exit_on_failure?
       true
@@ -33,8 +33,6 @@ module Stackit
 
       def init_cli
         Stackit.debug = !!options[:debug]
-        Stackit.environment = options[:environment]
-        #Stackit.configuration = options[:config] if options[:config]
 
         if Stackit.debug
           Stackit.logger.level = Logger::DEBUG
@@ -49,10 +47,12 @@ module Stackit
           Stackit.logger.level = Logger::ERROR
         end
 
+        Stackit.environment = options[:environment]
         Stackit.logger.debug "Environment: #{Stackit.environment}"
+        
+        Stackit.configuration = options[:config] if options[:config]
 
         Stackit.aws.credentials = Stackit.aws.load_credentials(options[:environment])
-
         Stackit.aws.profile = options[:profile] if options[:profile]
         Stackit.logger.debug "Profile: #{Stackit.aws.profile}"
 

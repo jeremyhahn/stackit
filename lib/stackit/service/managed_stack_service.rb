@@ -41,8 +41,9 @@ module Stackit
 
     def stack_path
       @stack_path ||= begin
+        toolkit_namespace = self.class.name.split("::").first.downcase
         path = "#{Dir.pwd}/#{stack_type}"
-        path = File.directory?(path) ? path : __dir__
+        path = File.directory?(path) ? path : "#{Dir.pwd}/lib/#{toolkit_namespace}/#{stack_type}"
         options[:stack_path] || path
       end
     end

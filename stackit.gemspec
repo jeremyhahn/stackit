@@ -37,5 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'activesupport', '~> 4.2'
   spec.add_runtime_dependency 'configliere', '~> 0.4'
   spec.add_runtime_dependency 'mixlib-shellout', '~> 2.2'
-  spec.add_runtime_dependency 'net-ssh', '>= 4.1.0'
+  spec.add_runtime_dependency 'net-ssh', '~> 4.1', '>= 4.1.0'
 end
