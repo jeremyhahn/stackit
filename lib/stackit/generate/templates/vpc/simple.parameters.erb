@@ -1,0 +1,62 @@
+[
+  {
+    "ParameterKey": "VpcName",
+    "ParameterValue": "<%= vpc_name %>"
+  },
+  {
+    "ParameterKey": "RemoteAccessNetwork",
+    "ParameterValue": "<%= remote_access_network %>"
+  },
+  {
+    "ParameterKey": "VpcCidrNetwork",
+    "ParameterValue": "<%= cidr %>"
+  },
+  {
+    "ParameterKey": "PublicCidrAZ1",
+    "ParameterValue": "<%= cidr_network %>.110.0/24"
+  },
+  {
+    "ParameterKey": "PublicCidrAZ2",
+    "ParameterValue": "<%= cidr_network %>.120.0/24"
+  },
+  {
+    "ParameterKey": "PublicCidrAZ3",
+    "ParameterValue": "<%= cidr_network %>.130.0/24"
+  },
+  {
+    "ParameterKey": "PrivateCidrAZ1",
+    "ParameterValue": "<%= cidr_network %>.111.0/24"
+  },
+  {
+    "ParameterKey": "PrivateCidrAZ2",
+    "ParameterValue": "<%= cidr_network %>.121.0/24"
+  },
+  {
+    "ParameterKey": "PrivateCidrAZ3",
+    "ParameterValue": "<%= cidr_network %>.131.0/24"
+  },
+  {
+    "ParameterKey": "VpcAvailabilityZone1",
+    "ParameterValue": "us-east-1a"
+  },
+  {
+    "ParameterKey": "VpcAvailabilityZone2",
+    "ParameterValue": "us-east-1c"
+  },
+  {
+    "ParameterKey": "VpcAvailabilityZone3",
+    "ParameterValue": "us-east-1e"
+  },
+  {
+    "ParameterKey": "DevOpsBucketName",
+    "ParameterValue": "<%= devops_bucket_name %>"
+  },
+  {
+    "ParameterKey": "PrivateHostedZoneName",
+    "ParameterValue": "<%= private_hosted_zone_name %>"
+  },
+  {
+    "ParameterKey": "PublicHostedZoneName",
+    "ParameterValue": "<%= public_hosted_zone_name %>"
+  }
+]

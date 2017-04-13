@@ -6,6 +6,7 @@ module Stackit
 
     class_option :environment, :aliases => '-e', :desc => "Your stack environment (dev, staging, prod, etc)", :default => 'default'
     class_option :profile, desc: 'AWS profile', :default => 'default'
+    class_option :config, desc: 'Path to stackit configuration file'
     class_option :region, desc: 'AWS region'
     class_option :debug, type: :boolean, default: false
     class_option :verbose, type: :boolean, default: false
@@ -16,7 +17,7 @@ module Stackit
       init_cli
     end
 
-    def self.banner(task, namespace = true, subcommand = false)
+    def self.banner(task, namespace = true, subcommand = true)
       "#{basename} #{task.usage}"
     end
 
@@ -32,7 +33,8 @@ module Stackit
 
       def init_cli
         Stackit.debug = !!options[:debug]
-        Stackit.environment = options[:environment].to_sym
+        Stackit.environment = options[:environment]
+        #Stackit.configuration = options[:config] if options[:config]
 
         if Stackit.debug
           Stackit.logger.level = Logger::DEBUG

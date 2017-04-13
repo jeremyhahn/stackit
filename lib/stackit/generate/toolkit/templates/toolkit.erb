@@ -1,0 +1,29 @@
+require 'stackit'
+require '<%= toolkit_name %>/version'
+
+module <%= toolkit_module_name %>
+  class << self
+
+    attr_accessor :home
+    attr_accessor :logger
+    attr_accessor :aws
+    attr_accessor :environment
+
+    def aws
+      @aws ||= Stackit.aws
+    end
+
+    def home
+      Pathname.new(File.expand_path('<%= toolkit_name %>.gemspec', __dir__)).dirname
+    end
+
+    def logger
+      @logger ||= Logger.new(STDOUT)
+    end
+
+    def environment
+      @environment ||= Stackit.environment
+    end
+
+  end
+end

@@ -1,0 +1,21 @@
+require 'stackit/service/chefsolo_node_managed_stack_service'
+require 'stackit/service/codepipeline_managed_stack_service'
+
+module <%= toolkit_namespace %>::<%= module_name %>
+  class StackService < Stackit::ChefSoloNodeManagedStackService
+
+    def initialize(options)
+      super(options)
+      depends_on [vpc_name]
+      self.tier = :<%= tier_name %>
+      self.stack_type = :<%= stack_type %>
+    end
+
+    def chef_attributes
+      super.merge({
+        :custom => 'attribute'
+      })
+    end
+
+  end
+end

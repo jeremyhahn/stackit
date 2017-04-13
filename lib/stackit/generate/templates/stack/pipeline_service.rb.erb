@@ -1,0 +1,17 @@
+require 'stackit/service/codepipeline_managed_stack_service'
+
+module <%= toolkit_namespace %>::<%= module_name %>
+  class PipelineService < Stackit::CodePipelineManagedStackService
+
+    def initialize(options)
+      super(options)
+      depends_on [vpc_name, "<%= super_stack %>"]
+      self.stack_type = :<%= stack_type %>
+      self.app_name = "<%= app_name %>"
+      self.repository = "<%= repository %>"
+      self.deployment_group_tag_value = options[:deployment_group_tag_value] || stack_type
+    end
+
+  end
+end
+

@@ -1,0 +1,31 @@
+require '<%= toolkit_name %>'
+require 'stackit/cli/stack_cli'
+
+module <%= toolkit_module_name %>
+  class Cli < Thor
+
+    def initialize(*args)
+      super(*args)
+    end
+
+    def self.require_clis
+      Dir.glob("#{<%= toolkit_module_name %>.home}/<%= toolkit_name %>/*") do |pkg|
+        next if File.file?(pkg)
+        pkg_name = pkg.split('/').last
+        full_pkg_name = "<%= toolkit_module_name %>::#{pkg_name.capitalize}::Cli"
+        cli = "#{pkg}/cli.rb"
+        if File.exist?(cli)
+          require cli
+          clazz = full_pkg_name.constantize
+          clazz.initialize_cli if clazz.respond_to?('initialize_cli')
+        end
+      end
+    end
+
+    desc 'version', 'Displays <%= toolkit_name %> version'
+    def version
+      puts "Amazon Web Services Toolkit v#{<%= toolkit_module_name %>::VERSION}"
+    end
+
+  end
+end

@@ -17,8 +17,9 @@ module Stackit
         puts e.backtrace
       end
 
-      def error(message)
+      def error(message, exitstatus = 1)
         say_status 'ERROR', message, :red
+        exit exitstatus
       end
   
       def success(message)

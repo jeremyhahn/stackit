@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+$:.push File.expand_path('../../lib', __FILE__)
+require '<%= toolkit_name %>/cli'
+<%= toolkit_module_name %>::Cli.require_clis
+<%= toolkit_module_name %>::Cli.start
+

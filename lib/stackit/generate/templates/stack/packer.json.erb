@@ -1,0 +1,61 @@
+{
+  "variables": {
+    "aws_access_key_id": "", 
+    "aws_secret_key": "",
+    "region": "",
+    "instance_type": "",
+    "security_group_ids": "",
+    "iam_instance_profile": "",
+    "subnet_id": "",
+    "source_ami": "",
+    "ssh_username": "",
+    "ssh_keypair_name": "",
+    "ssh_private_key_file": "",
+    "stack": "<%= stack_type %>",
+    "chef_cookbooks": "../cookbooks",
+    "chef_recipe": "",
+    "chef_attributes_file": "/tmp/<%= stack_type %>-attributes.json"
+  },
+
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key_id`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "{{user `region`}}",
+    "instance_type": "{{user `instance_type`}}",
+    "security_group_ids": "{{user `security_group_ids`}}",
+    "iam_instance_profile": "{{user `iam_instance_profile`}}",
+    "subnet_id": "{{user `subnet_id`}}",
+    "associate_public_ip_address": "true",
+    "source_ami": "{{user `source_ami`}}",
+    "ssh_username": "{{user `ssh_username`}}",
+    "ssh_keypair_name": "{{user `ssh_keypair_name`}}",
+    "ssh_private_key_file": "{{user `ssh_private_key_file`}}",
+    "ssh_pty": "true",
+    "enhanced_networking": "true",
+    "ami_name": "{{user `stack`}}_{{timestamp}}",
+    "tags": {
+      "type": "{{user `stack`}}"
+    }
+  }],
+
+  "provisioners" : [{
+    "type": "file",
+    "source": "{{user `chef_attributes_file`}}",
+    "destination": "/tmp/chef-attributes.json"
+  }, { 
+    "type": "shell",
+    "inline": [
+      "sudo yum install -y wget unzip",
+      "wget http://s3.amazonaws.com/ec2-downloads/ec2-ami-tools.zip",
+      "sudo mkdir -p /usr/local/ec2",
+      "sudo unzip ec2-ami-tools.zip -d /usr/local/ec2"
+     ]
+  }, {
+    "type": "chef-solo",
+    "cookbook_paths": [ "{{user `chef_cookbooks`}}" ],
+    "run_list": [ "{{user `chef_recipe`}}" ],
+    "execute_command": "sudo chef-solo -c {{.ConfigPath}} -j /tmp/chef-attributes.json"
+  }]
+
+}

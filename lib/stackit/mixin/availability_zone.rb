@@ -5,7 +5,7 @@ module Stackit::Mixin::AvailabilityZone
   attr_accessor :az_syms
 
   def az=(az)
-    @az = az || az_syms[0]
+    @az = az.to_sym || az_syms[0]
   end
 
   def az_syms=(keys)
@@ -45,6 +45,11 @@ module Stackit::Mixin::AvailabilityZone
     {
       sampled_az_sym => resolve_parameter(sampled_az_sym)
     }
+  end
+
+  def resolve_az(index)
+    raise "index must be an integer. Got #{index.class} :#{index}" unless index.is_a?(Integer)
+    az_syms[index-1]
   end
 
  private

@@ -2,4 +2,5 @@
 $:.push File.expand_path('../../lib', __FILE__)
 require 'stackit/cli/stack_cli'
 require 'stackit/cli/stackit_cli'
+Stackit::StackitCli.require_clis
 Stackit::StackitCli.start

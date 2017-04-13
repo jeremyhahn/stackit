@@ -1,0 +1,41 @@
+---
+driver:
+  name: ec2
+  aws_ssh_key_id: <%= aws_ssh_key %>
+  security_group_ids: ["<%= security_group %>"]
+  region: <%= region %>
+  availability_zone: <%= availability_zone %>
+  require_chef_omnibus: true
+  subnet_id: <%= subnet_id %>
+  iam_profile_name: <%= iam_profile_name %>
+  instance_type: <%= instance_type %>
+  associate_public_ip: <%= associate_public_ip %>
+  interface: dns
+
+transport:
+  ssh_key: <%= transport_ssh_key %>
+  connection_timeout: 10
+  connection_retries: 5
+  username: <%= transport_username %>
+
+provisioner:
+  name: chef_zero
+  chef_zero_port: 9090
+
+platforms:
+  - name: amazon
+    driver:
+      image_id: <%= platform_ami %>
+    transport:
+      username: <%= platform_username %>
+
+suites:
+  - name: <%= service_name %>
+    run_list:
+      - recipe[<%= service_name %>]
+    attributes: { 
+      <%= service_name %>: {
+        test_kitchen: true
+      }
+    }
+

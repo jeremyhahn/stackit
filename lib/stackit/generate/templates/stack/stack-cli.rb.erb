@@ -1,0 +1,125 @@
+require_relative 'service'
+
+module <%= toolkit_namespace %>::<%= module_name %>
+  class Cli < Stackit::StackCli
+
+    def initialize(*args)
+      super(*args)
+    end
+
+    def self.initialize_cli
+      Thor.desc "<%= stack_type %>", "Manages the <%= stack_type %> stack"
+      Thor.subcommand "<%= stack_type %>", self
+    end
+
+    desc 'create-stack', 'Creates a new <%= stack_type %> cloudformation stack'
+    method_option :template, aliases: '-t', desc: 'The cloudformation template'
+    method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name'
+    method_option :stack_policy, :aliases => '-p', :desc => 'A local file system or S3 (HTTPS) path to the stack policy'
+    method_option :depends, :aliases => '-d', :type => :array, :default => [], :desc => 'Space delimited list of stack names to automatically map parameter values from'
+    method_option :parameters, aliases: '-p', type: :hash, desc: 'Parameters supplied to the cloudformation template', default: {}
+    method_option :parameters_file, desc: 'Parameters supplied to the cloudformation template'
+    method_option :parameter_map, :aliases => '-pm', type: :hash, default: {}, desc: 'Parameter map used to direct dependent parameter values to stack template parameters'
+    method_option :disable_rollback, :type => :boolean, :default => false, :desc => 'Disable cloudformation rollback when creation fails'
+    method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
+    method_option :force, :desc => 'Force a stack update on unchanged templates'
+    method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
+    def create_stack
+      StackService.new(options).create!
+    end
+
+    desc 'update-stack', 'Updates the <%= stack_type %> cloudformation stack'
+    method_option :template, aliases: '-t', desc: 'The cloudformation template'
+    method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name'
+    method_option :stack_policy, :aliases => '-p', :desc => 'A local file system or S3 (HTTPS) path to the stack policy'
+    method_option :stack_policy_during_update, :aliases => '-pu', :desc => 'A local file system or S3 (HTTPS) path to the stack policy to use during update'
+    method_option :depends, :aliases => '-d', :type => :array, :default => [], :desc => 'Space delimited list of stack names to automatically map parameter values from'
+    method_option :parameters, aliases: '-p', type: :hash, desc: 'Parameters supplied to the cloudformation template', default: {}
+    method_option :parameters_file, desc: 'Parameters supplied to the cloudformation template'
+    method_option :parameter_map, :aliases => '-pm', type: :hash, default: {}, desc: 'Parameter map used to direct dependent parameter values to stack template parameters'
+    method_option :disable_rollback, :type => :boolean, :default => false, :desc => 'Disable cloudformation rollback when creation fails'
+    method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
+    method_option :force, :desc => 'Force a stack update on unchanged templates'
+    method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
+    def update_stack
+      StackService.new(options).update!
+    end
+
+    desc 'delete-stack', 'Deletes a <%= stack_type %> cloudformation stack'
+    method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name'
+    method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
+    method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
+    def delete_stack
+      StackService.new(options).delete!
+    end
+
+    desc 'pack', 'Create a pre-provisioned AMI using packer', :desc => 'VPN node identifier'
+    method_option :vars, type: :hash, default: {}, desc: 'Additional vars for your packer template'
+    method_option :template, desc: 'Optional path to the packer template'
+    method_option :cookbooks, desc: 'Optional path to chef cookbooks'
+    method_option :depends, :aliases => '-d', :type => :array, :default => [], :desc => 'Space delimited list of stack names to automatically map parameter values from'
+    def pack
+      options[:chef_runlist] = options[:runlist] if options[:runlist]
+      StackService.new(options).pack!
+    end
+
+    desc 'create-pipeline', 'Create a new CodePipeline'
+    method_option :template, aliases: '-t', desc: 'The cloudformation template'
+    method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name'
+    method_option :stack_policy, :aliases => '-p', :desc => 'A local file system or S3 (HTTPS) path to the stack policy'
+    method_option :depends, :aliases => '-d', :type => :array, :default => [], :desc => 'Space delimited list of stack names to automatically map parameter values from'
+    method_option :parameters, aliases: '-p', type: :hash, desc: 'Parameters supplied to the cloudformation template', default: {}
+    method_option :parameters_file, desc: 'Parameters supplied to the cloudformation template'
+    method_option :parameter_map, :aliases => '-pm', type: :hash, default: {}, desc: 'Parameter map used to direct dependent parameter values to stack template parameters'
+    method_option :disable_rollback, :type => :boolean, :default => false, :desc => 'Disable cloudformation rollback when creation fails'
+    method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
+    method_option :force, :desc => 'Force a stack update on unchanged templates'
+    method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
+    method_option :stack_role_key, :desc => 'The cloudformation key for the role to add the deployment policy to'
+    method_option :repository, :desc => 'The github repository name where the application resides'
+    method_option :branch, :desc => 'The github repository branch to watch'
+    method_option :app_name, :desc => 'The name of the application being deployed'
+    method_option :app_source, :desc => 'Optional path to the github clone URL. Defaults to guthub username/application_name.git'
+    method_option :deployment_group_tag_key, :desc => 'The EC2 tag key used to filter target instances for deployment'
+    method_option :deployment_group_tag_value, :desc => 'The EC2 tag value used to filter target instances for deployment'
+    def create_pipeline
+      require_relative 'pipeline_service'
+      PipelineService.new(options).create!
+    end
+
+    desc 'update-pipeline', 'Create a new CodePipeline'
+    method_option :template, aliases: '-t', desc: 'The cloudformation template'
+    method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name'
+    method_option :stack_policy, :aliases => '-p', :desc => 'A local file system or S3 (HTTPS) path to the stack policy'
+    method_option :stack_policy_during_update, :aliases => '-pu', :desc => 'A local file system or S3 (HTTPS) path to the stack policy to use during update'
+    method_option :depends, :aliases => '-d', :type => :array, :default => [], :desc => 'Space delimited list of stack names to automatically map parameter values from'
+    method_option :parameters, aliases: '-p', type: :hash, desc: 'Parameters supplied to the cloudformation template', default: {}
+    method_option :parameters_file, desc: 'Parameters supplied to the cloudformation template'
+    method_option :parameter_map, :aliases => '-pm', type: :hash, default: {}, desc: 'Parameter map used to direct dependent parameter values to stack template parameters'
+    method_option :disable_rollback, :type => :boolean, :default => false, :desc => 'Disable cloudformation rollback when creation fails'
+    method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
+    method_option :force, :desc => 'Force a stack update on unchanged templates'
+    method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
+    method_option :stack_role_key, :desc => 'The cloudformation key for the role to add the deployment policy to'
+    method_option :repository, :desc => 'The github repository name where the application resides'
+    method_option :branch, :desc => 'The github repository branch to watch'
+    method_option :app_name, :desc => 'The name of the application being deployed'
+    method_option :app_source, :desc => 'Optional path to the github clone URL. Defaults to guthub username/application_name.git'
+    method_option :deployment_group_tag_key, :desc => 'The EC2 tag key used to filter target instances for deployment'
+    method_option :deployment_group_tag_value, :desc => 'The EC2 tag value used to filter target instances for deployment'
+    def update_pipeline
+      require_relative 'pipeline_service'
+      PipelineService.new(options).update!
+    end
+
+    desc 'delete-pipeline', 'Deletes the CodePipeline'
+    method_option :stack_name, aliases: '-n', desc: 'The stack name. Defaults to the camelized template file name'
+    method_option :wait, :aliases => '-w', type: :boolean, default: false, desc: 'Wait for the stack to enter STATUS_COMPLETE before returning or raise an exception if it times out'
+    method_option :dry_run, :type => :boolean, :default => false, :desc => 'Run all code except AWS API calls'
+    def delete_pipeline
+      require_relative 'pipeline_service'
+      PipelineService.new(options).delete!
+    end
+
+  end
+end

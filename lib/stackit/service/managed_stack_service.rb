@@ -1,13 +1,22 @@
 module Stackit
-
   class ManagedStackService
 
+    attr_accessor :environment_config
     attr_accessor :options
     attr_accessor :stacks
+    attr_accessor :stack_path
+    attr_accessor :stack_type
     attr_accessor :stack_action
+    attr_accessor :devops_bucket
+    attr_accessor :artifacts
 
     def initialize(options)
       self.options = options || {}
+      self.artifacts = options[:artifacts] || []
+    end
+
+    def environment_config
+      @environment_config ||= Stackit.environment_config
     end
 
     def create!
@@ -30,12 +39,20 @@ module Stackit
       final_stack.change_set!
     end
 
+    def stack_path
+      @stack_path ||= begin
+        path = "#{Dir.pwd}/#{stack_type}"
+        path = File.directory?(path) ? path : __dir__
+        options[:stack_path] || path
+      end
+    end
+
     def stack_name
       options[:stack_name] || "#{Stackit.environment}-#{options[:stack_name]}"
     end
 
     def template
-      options[:template] || File.expand_path("#{options[:stack_name]}.json", template_dir)
+      options[:template] || File.expand_path("#{options[:stack_name]}.json", stack_path)
     end
 
     def stack_policy
@@ -47,8 +64,7 @@ module Stackit
     end
 
     def parameters_file
-      return options[:parameters_file] ||
-        File.expand_path("#{options[:stack_name]}.parameters", template_dir)
+      return options[:parameters_file] || File.expand_path("#{options[:stack_name]}.parameters", stack_path)
     end
 
     def depends
@@ -65,10 +81,6 @@ module Stackit
 
     def user_defined_parameters
       {}
-    end
-
-    def template_dir
-      dir = options[:template_dir] ? options[:template_dir] : __dir__
     end
 
     def disable_rollback
@@ -170,6 +182,10 @@ module Stackit
     def resolve_parameters(keys)
       Stackit.logger.debug "Resolving parameters: #{keys.join(', ')}"
       Stackit::ParameterResolver.new(depends_stacks).resolve(keys)
+    end
+
+    def devops_bucket
+      @devops_bucket ||= Stackit::Bucket.new(options, depends_stacks)
     end
 
   private

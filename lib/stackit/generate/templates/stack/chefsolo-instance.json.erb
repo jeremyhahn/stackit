@@ -1,0 +1,423 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "<%= vpc_name %> <%= stack_type %>",
+
+  "Parameters" : {
+
+    "Vpc" : {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description" : "The VPC identifier",
+      "ConstraintDescription": "must be a valid VPC identifier"
+    },
+
+    "VpcCidrNetwork" : {
+      "Description" : "The VPC CIDR",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "RemoteAccessNetwork" : {
+      "Description" : "The office CIDR where remote management will occur",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "127.0.0.1/32",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "Environment": {
+      "Type": "String",
+      "Description" : "The environment (dev|prod)",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+
+    "KeyPair": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+
+    "DefaultIngressSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup::Id",
+      "Description": "The default VPC ingress security group"
+    },
+
+    "Subnet": {
+      "Description": "The subnet to launch the instance in",
+      "Type": "String"
+    },
+
+    "DisableApiTermination": {
+      "Description" : "True to disable EC2 termination protection, false to enable.",
+      "Type": "String"
+    },
+
+    "ImageId": {
+      "Description": "The AMI to use for the instances",
+      "Type": "String",
+      "MinLength": "12",
+      "MaxLength": "12",
+      "AllowedPattern": "ami-[0-9a-f]{8}$",
+      "ConstraintDescription": "Must be a valid AMI image identifier"
+    },
+
+    "AvailabilityZone": {
+      "Type": "String"
+    },
+
+    "InstanceType": {
+      "Type": "String"
+    },
+
+    "StackType": {
+      "Type": "String",
+      "Description": "The type of stack being deployed. Ex: webserver, mailserver, rails"
+    },
+
+    "DevOpsBucket": {
+      "Type": "String"
+    },
+
+    "Hostname": {
+      "Type": "String"
+    },
+
+    "ChefCookbookSource": {
+      "Type": "String"
+    },
+
+    "ChefVersion": {
+      "Type": "String"
+    },
+
+    "ChefAttributes": {
+      "Type": "String"
+    },
+
+    "ElasticIp": {
+      "Type": "String",
+      "Default": "false"
+    },
+
+    "PrivateHostedZoneName": {
+      "Type": "String"
+    },
+
+    "PublicHostedZoneName": {
+      "Type": "String"
+    }
+
+  },
+
+  "Conditions": {
+    "AssignEip": { "Fn::Equals" : [ { "Ref" : "ElasticIp" }, "true" ] }
+  },
+
+  "Resources" : {
+
+    "Eip" : {
+      "Type" : "AWS::EC2::EIP",
+      "Condition": "AssignEip",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "EipAllocation": {
+      "Type": "AWS::EC2::EIPAssociation",
+      "Condition": "AssignEip",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt" : [ "Eip", "AllocationId" ] },
+        "InstanceId": {"Ref": "Instance"}
+      }
+    },
+
+    "InstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+
+    "IamPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "stack-policy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": ["s3:ListBucket"],
+            "Resource": [
+              { "Fn::Join": [ "", [ "arn:aws:s3:::", {"Ref": "DevOpsBucket" } ] ] }
+            ]
+          }, {
+            "Effect": "Allow",
+            "Action": [
+              "s3:GetObject"
+            ],
+            "Resource": [
+              { "Fn::Join": [ "", [ "arn:aws:s3:::", {"Ref": "DevOpsBucket" }, "/cookbooks.tar.gz" ] ] },
+              { "Fn::Join": [ "", [ "arn:aws:s3:::", {"Ref": "DevOpsBucket" }, "/packages/*" ] ] }
+            ]
+          }, {
+            "Effect": "Allow",
+            "Action": [
+              "ec2:AllocateAddress",
+              "ec2:AssociateAddress",
+              "ec2:DescribeAddresses",
+              "ec2:DisassociateAddress"
+            ],
+            "Resource": ["*"]
+          }]
+        },
+        "Roles" : [ { "Ref" : "InstanceRole" } ]
+      }
+    },
+
+    "InstanceIamProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [ {"Ref": "InstanceRole"} ]
+      }
+    },
+
+    "SecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "Vpc" },
+        "GroupDescription" : { "Fn::Join": [ "-", [ { "Ref": "Environment" }, {"Ref": "StackType"} ] ] },
+        "SecurityGroupIngress" : [ ],
+         "Tags" : [
+           { "Key" : "Name", "Value" : { "Fn::Join": [ "-", [ { "Ref": "Environment" }, {"Ref": "StackType"}] ] } }
+         ]
+      }
+    },
+
+    "Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "AvailabilityZone" : { "Ref": "AvailabilityZone" },
+        "DisableApiTermination" : { "Ref": "DisableApiTermination" },
+        "IamInstanceProfile" : {"Ref": "InstanceIamProfile"},
+        "ImageId" : {"Ref": "ImageId"},
+        "InstanceType" : {"Ref": "InstanceType"},
+        "KeyName" : {"Ref": "KeyPair"},
+        "NetworkInterfaces" : [{
+          "AssociatePublicIpAddress" : "true",
+          "DeleteOnTermination" : "true",
+          "SubnetId" : { "Ref" : "Subnet" },
+          "DeviceIndex" : "0",
+          "GroupSet" : [ {"Ref": "DefaultIngressSecurityGroup"}, {"Ref": "SecurityGroup"} ]
+        }],
+        "Tags" : [{
+          "Key": "Name",
+          "Value": { "Ref": "Hostname" }
+        }, {
+          "Key": "stack-type",
+          "Value": {"Ref": "StackType"}
+        }],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [ "",
+              [
+                "#!/bin/bash\n",
+                "easy_install pip\n",
+                "pip install awscli\n",
+                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                "chmod 755 /usr/init/redhat/cfn-hup\n",
+                "ln -s /usr/init/redhat/cfn-hup /etc/init.d/\n",
+                "mkdir /opt/aws\n",
+                "ln -s /bin /opt/aws\n",
+                "curl http://169.254.169.254/latest/meta-data/instance-id > /etc/aws-instance-id\n",
+                "/opt/aws/bin/cfn-init ",
+                "         --stack ", {"Ref": "AWS::StackName"},
+                "         --configsets install ",
+                "         --resource Instance ",
+                "         --region ", {"Ref": "AWS::Region"}, "\n",
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "         --stack ", {"Ref": "AWS::StackName"},
+                "         --resource Instance",
+                "         --region ", {"Ref": "AWS::Region"}, "\n"
+              ]
+            ]
+          }
+        }
+      },
+      "CreationPolicy" : {
+        "ResourceSignal" : {
+          "Timeout" : "PT10M"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "type": "S3",
+            "roleName": { "Ref" : "InstanceRole"},
+            "buckets" : [ {"Ref": "DevOpsBucket"} ]
+          }
+        },
+        "AWS::CloudFormation::Init": {
+          "configSets" : {
+            "install" : [ "cloudformation", "chef" ]
+          },
+          "cloudformation": {
+            "files": {
+              "/etc/cfn/cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [ "",
+                    [
+                      "[main]\n",
+                      "stack=", {"Ref": "AWS::StackId"}, "\n",
+                      "region=", {"Ref": "AWS::Region"}, "\n",
+                      "interval=1"
+                    ]
+                  ]
+                },
+                "mode": "000400",
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [ "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Instance.Metadata.AWS::CloudFormation::Init\n",
+                      "action=/opt/aws/bin/cfn-init -v ",
+                      "         --stack ", {"Ref": "AWS::StackId"},
+                      "         --configsets install ",
+                      "         --resource Instance ",
+                      "         --region ", {"Ref": "AWS::Region"}, "\n"
+                    ]
+                  ]
+                },
+                "mode": "000400",
+                "owner": "root",
+                "group": "root"
+              }
+            },
+            "services" : {
+              "sysvinit" : {
+                "cfn-hup" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true",
+                  "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]
+                }
+              }
+            }
+          },
+          "chef": {
+            "files": {
+              "/tmp/install.sh": {
+                "source": "https://www.opscode.com/chef/install.sh",
+                "mode": "000400",
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/chef/ohai/hints/ec2.json": {
+                "content": "{}",
+                "owner": "root",
+                "group": "root",
+                "mode": "000400"
+              },
+              "/etc/chef/solo.rb": {
+                "content": {
+                  "Fn::Join": [ "",
+                    [
+                      "file_cache_path \"/tmp\"\n",
+                      "cookbook_path \"/etc/chef/cookbooks\"\n"
+                    ]
+                  ]
+                },
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/chef/node.json": {
+                "content": { "Ref": "ChefAttributes" },
+                "mode": "000644",
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/chef/update-cookbooks-and-run.sh": {
+                "content": {
+                  "Fn::Join": [ "",
+                    [
+                      { "Fn::Join" : [ "", ["aws s3 cp s3://", {"Ref": "DevOpsBucket"}, "/cookbooks.tar.gz /tmp\n"]]},
+                      "tar xzvf /tmp/cookbooks.tar.gz -C /etc/chef\n",
+                      "chef-solo -c /etc/chef/solo.rb -j /etc/chef/node.json\n"
+                    ]
+                  ]
+                },
+                "mode": "000774",
+                "owner": "root",
+                "group": "root"
+              }
+            },
+            "commands": {
+              "01_install_chef": {
+                "command": { "Fn::Join": ["", ["bash /tmp/install.sh -v ",{"Ref": "ChefVersion"}]]},
+                "cwd": "/tmp"
+              },
+              "02_download_cookbooks": {
+                "command": { "Fn::Join" : [ "", ["aws s3 cp s3://", {"Ref": "DevOpsBucket"}, "/cookbooks.tar.gz /tmp"]]},
+                "cwd": "/tmp"
+              },
+              "03_extract_cookbooks": {
+                "command": { "Fn::Join" : [ "", ["tar xzvf /tmp/cookbooks.tar.gz -C /etc/chef"]]},
+                "cwd": "/tmp"
+              },
+              "04_chef_run": {
+                "command": {"Fn::Join": ["", ["chef-solo -c /etc/chef/solo.rb -j /etc/chef/node.json -L /var/log/chef.log"]]},
+                "cwd": "/tmp"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "DnsEntry" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : {
+          "Fn::Join" : [ "", [ { "Ref" : "PrivateHostedZoneName" }, "." ] ]
+        },
+        "Name" : {
+          "Fn::Join" : [ "", [ { "Ref": "Hostname" } , ".", {"Ref" : "PrivateHostedZoneName"} ,"." ]]
+        },
+        "Type" : "A",
+        "TTL" : "900",
+        "ResourceRecords" : ["Fn::GetAtt" : [ "Instance" , "PrivateIp" ]]
+      }
+    },
+
+  },
+
+  "Outputs" : {
+
+  }
+}

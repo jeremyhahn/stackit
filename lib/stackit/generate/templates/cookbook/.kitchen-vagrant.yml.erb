@@ -1,0 +1,17 @@
+ driver:
+   name: vagrant
+   customize:
+     cableconnected1: 'on'
+   network:
+    - ["forwarded_port", {guest: 80, host: 8080}]
+
+ provisioner:
+   name: chef_zero
+
+ platforms:
+   - name: ubuntu-12.04
+
+suites:
+  - name: miniproject
+    run_list:
+      - recipe[<%= service_name %>]

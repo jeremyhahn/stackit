@@ -1,0 +1,53 @@
+module <%= toolkit_namespace %>::<%= module_name %>
+  class Service < Stackit::ManagedStackService
+
+    def initialize(options)
+      super(options)
+      self.stack_type = :<%= stack_type %>
+    end
+
+    def stack_name
+      options[:stack_name] || "<%= vpc_name %>-#{Stackit.environment}"
+    end
+
+    def template
+      return options[:template] || "#{stack_path}/vpc.json"
+    end
+
+    def parameters_file
+      return options[:parameters_file] || "#{stack_path}/vpc-#{Stackit.environment}.parameters"
+    end
+
+    def deploy!
+
+      start_time = Time.now
+
+      options[:wait] = true
+      create!
+
+      Stackit::Cookbooks::Service.new(options.merge(
+        vpc: stack_name,
+        cookbooks: options[:cookbooks]
+      )).deploy
+
+      services.each do |service|
+        service.artifacts.each do |artifact|
+          artifact.upload
+        end
+        service.create!
+      end
+
+      stack.notifier.success("Created stacks in #{((Time.now - start_time) / 60).round(2)} minutes")
+    end
+
+  private
+
+    def services
+      #require 'my/stack/service'
+      @services ||= [
+        #My::Stack::Service.new(depends: [stack_name], wait: true)
+      ]
+    end
+
+  end
+end
